@@ -944,135 +944,222 @@ function renderStats(){
 
 // ── TOAST
 function genFacturePDF(factId){
-  if(typeof window.jspdf==='undefined'){toast('jsPDF non chargé');return;}
+  if(typeof window.jspdf==='undefined'){toast('jsPDF non charge');return;}
   const f=factures.find(x=>x.id===factId);
   if(!f){toast('Facture introuvable');return;}
   const{jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,M=18;
-  const NAVY=[27,58,82],ORANGE=[232,118,26],TEXT=[30,45,70],TEXT2=[100,120,150],BORDER=[220,228,234];
-  const fmtPDF=n=>Math.round(Math.abs(n||0)).toLocaleString('fr-FR').replace(/\u202f/g,' ').replace(/\u00a0/g,' ');
-  const fmtD=d=>{if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d;};
+  const W=210,M=14;
+  const NAVY=[27,58,82],ORANGE=[232,118,26];
+  const fP=n=>Math.round(Math.abs(n||0)).toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g,' ');
+  const fD=d=>{if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:d;};
   const enc=(f.paiements||[]).reduce((a,p)=>a+p.montant,0);
   const du=f.montantTotal-enc;
 
-  // En-tête
-  doc.setFillColor(...NAVY);
-  doc.rect(0,0,W,40,'F');
+  // ── LOGO zone (haut gauche) — bandeau orange fin
   doc.setFillColor(...ORANGE);
-  doc.rect(0,37,W,3,'F');
+  doc.rect(0,0,W,1.5,'F');
+
+  // ── EN-TETE : 3 colonnes
+  // Colonne gauche vide (espace logo)
+  doc.setFillColor(245,247,252);
+  doc.rect(M,8,38,28,'F');
   doc.setFont('helvetica','bold');
-  doc.setFontSize(16);
+  doc.setFontSize(10);
+  doc.setTextColor(...NAVY);
+  doc.text('MBENGUE',M+2,17);
+  doc.setFontSize(7);
+  doc.setFont('helvetica','normal');
   doc.setTextColor(...ORANGE);
-  doc.text('MBENGUE ARCHIBUILDING',M,16);
+  doc.text('ARCHIBUILDING',M+2,22);
+
+  // Colonne centre — infos société
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...NAVY);
+  doc.text('MBENGUE ARCHIBUILDING',66,12,{align:'center'});
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(80,100,120);
+  doc.text('Conception et dimensionnement de batiments',66,17,{align:'center'});
+  doc.text('Abdou Latif Mbengue — Ingenieur en genie civil',66,21,{align:'center'});
+  doc.text('Dakar, Senegal',66,25,{align:'center'});
+  doc.text('NINEA : [a completer]',66,29,{align:'center'});
+
+  // Colonne droite — FACTURE
+  doc.setFillColor(...NAVY);
+  doc.rect(W-M-42,8,42,28,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.setTextColor(255,255,255);
+  doc.text('FACTURE',W-M-21,18,{align:'center'});
   doc.setFont('helvetica','normal');
   doc.setFontSize(8);
-  doc.setTextColor(180,200,220);
-  doc.text('Conception et dimensionnement de batiments',M,23);
-  doc.text('Dakar, Senegal',M,29);
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(11);
-  doc.setTextColor(255,255,255);
-  doc.text('FACTURE',W-M,16,{align:'right'});
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(9);
-  doc.setTextColor(180,200,220);
-  doc.text(f.numFacture||'Sans numero',W-M,23,{align:'right'});
-  doc.text('Emise le '+fmtD(f.dateEmission),W-M,30,{align:'right'});
-
-  // Client
-  let y=50;
-  doc.setFillColor(245,247,252);
-  doc.rect(M,y,W-2*M,22,'F');
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...TEXT2);
-  doc.text('FACTURE A',M+4,y+7);
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(11);
-  doc.setTextColor(...NAVY);
-  doc.text(f.client||'Client',M+4,y+15);
-
-  // Prestation
-  y+=30;
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...TEXT2);
-  doc.text('DESCRIPTION DE LA PRESTATION',M,y);
-  y+=6;
-  doc.setFillColor(245,247,252);
-  doc.rect(M,y,W-2*M,12,'F');
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(10);
-  doc.setTextColor(...TEXT);
-  doc.text(f.description||'Prestation',M+4,y+8);
   doc.setTextColor(...ORANGE);
-  doc.setFont('helvetica','bold');
-  doc.text(fmtPDF(f.montantTotal)+' FCFA',W-M-4,y+8,{align:'right'});
-  y+=20;
+  doc.text(f.numFacture||'N° ---',W-M-21,24,{align:'center'});
+  doc.setTextColor(180,200,220);
+  doc.text('Date : '+fD(f.dateEmission),W-M-21,29,{align:'center'});
 
-  // Ligne séparatrice
-  doc.setDrawColor(...BORDER);doc.setLineWidth(0.4);
+  // ── LIGNE SÉPARATRICE
+  let y=42;
+  doc.setDrawColor(...ORANGE);
+  doc.setLineWidth(0.8);
   doc.line(M,y,W-M,y);
   y+=8;
 
-  // Paiements
+  // ── FACTURÉ À
+  doc.setFillColor(245,247,252);
+  doc.rect(M,y,W-2*M,24,'F');
+  doc.setDrawColor(...ORANGE);
+  doc.setLineWidth(0.5);
+  doc.line(M,y,M,y+24);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(...ORANGE);
+  doc.text('FACTURE A',M+4,y+6);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...NAVY);
+  doc.text(f.client||'Client',M+4,y+13);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(80,100,120);
+  doc.text('Dakar, Senegal',M+4,y+19);
+  y+=30;
+
+  // ── TABLEAU PRESTATIONS
+  // En-tête tableau
+  doc.setFillColor(...NAVY);
+  doc.rect(M,y,W-2*M,8,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(8);
+  doc.setTextColor(255,255,255);
+  doc.text('Description de la prestation',M+3,y+5.5);
+  doc.text('Qte',W-M-50,y+5.5,{align:'center'});
+  doc.text('Prix unitaire (FCFA)',W-M-28,y+5.5,{align:'center'});
+  doc.text('Montant (FCFA)',W-M-3,y+5.5,{align:'right'});
+  y+=9;
+
+  // Ligne prestation
+  doc.setFillColor(255,255,255);
+  doc.rect(M,y,W-2*M,10,'F');
+  doc.setDrawColor(220,228,234);
+  doc.setLineWidth(0.3);
+  doc.rect(M,y,W-2*M,10);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(30,45,70);
+  const desc=(f.description||'Prestation').slice(0,55);
+  doc.text(desc,M+3,y+6.5);
+  doc.text('1',W-M-50,y+6.5,{align:'center'});
+  doc.text(fP(f.montantTotal),W-M-20,y+6.5,{align:'center'});
+  doc.text(fP(f.montantTotal),W-M-3,y+6.5,{align:'right'});
+  y+=12;
+
+  // Lignes vides
+  for(let i=0;i<2;i++){
+    doc.setFillColor(250,252,253);
+    doc.rect(M,y,W-2*M,8,'F');
+    doc.setDrawColor(220,228,234);doc.setLineWidth(0.3);
+    doc.rect(M,y,W-2*M,8);
+    y+=8;
+  }
+  y+=4;
+
+  // ── SOUS-TOTAL / TOTAL
+  const totW=70;const totX=W-M-totW;
+  doc.setDrawColor(220,228,234);doc.setLineWidth(0.3);
+  doc.rect(totX,y,totW,8,'F');
+  doc.setFillColor(245,247,252);
+  doc.rect(totX,y,totW,8,'F');
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(80,100,120);
+  doc.text('Sous-total',totX+3,y+5.5);
+  doc.text(fP(f.montantTotal)+' FCFA',totX+totW-3,y+5.5,{align:'right'});
+  y+=8;
+
+  // Total à payer
+  doc.setFillColor(...NAVY);
+  doc.rect(totX,y,totW,10,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(255,255,255);
+  doc.text('TOTAL A PAYER',totX+3,y+6.5);
+  doc.setTextColor(...ORANGE);
+  doc.text(fP(f.montantTotal)+' FCFA',totX+totW-3,y+6.5,{align:'right'});
+  y+=16;
+
+  // ── HISTORIQUE PAIEMENTS
   if(f.paiements&&f.paiements.length>0){
     doc.setFont('helvetica','bold');
-    doc.setFontSize(8.5);
-    doc.setTextColor(...TEXT2);
-    doc.text('HISTORIQUE DES PAIEMENTS',M,y);
-    y+=6;
+    doc.setFontSize(8);
+    doc.setTextColor(...NAVY);
+    doc.text('Historique des paiements',M,y);
+    y+=5;
     f.paiements.forEach((p,i)=>{
       if(i%2===0){doc.setFillColor(248,250,253);}else{doc.setFillColor(255,255,255);}
       doc.rect(M,y-1,W-2*M,7,'F');
       doc.setFont('helvetica','normal');
-      doc.setFontSize(9);
-      doc.setTextColor(...TEXT);
+      doc.setFontSize(8);
+      doc.setTextColor(80,100,120);
       const type=p.type==='avance'?'Avance':'Solde';
-      doc.text(type+' — '+p.mode+' — '+fmtD(p.date),M+3,y+4);
-      doc.setTextColor(...[46,204,113]);
-      doc.text('+'+fmtPDF(p.montant)+' FCFA',W-M-3,y+4,{align:'right'});
+      doc.text(type+' — '+p.mode+' — '+fD(p.date),M+3,y+4);
+      doc.setTextColor(46,180,96);
+      doc.text('+'+fP(p.montant)+' FCFA',W-M-3,y+4,{align:'right'});
       y+=7;
     });
     y+=4;
+    // Restant dû
+    if(du>0){
+      doc.setFillColor(255,245,245);
+      doc.rect(M,y,W-2*M,8,'F');
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8.5);
+      doc.setTextColor(180,40,40);
+      doc.text('Restant du',M+3,y+5.5);
+      doc.text(fP(du)+' FCFA',W-M-3,y+5.5,{align:'right'});
+      y+=12;
+    }
   }
 
-  // Total
-  doc.setDrawColor(...BORDER);doc.setLineWidth(0.4);
-  doc.line(M,y,W-M,y);y+=8;
-  const rows=[
-    {label:'Total facture',val:fmtPDF(f.montantTotal)+' FCFA',color:TEXT,bold:false},
-    {label:'Total encaisse',val:fmtPDF(enc)+' FCFA',color:[46,204,113],bold:false},
-    {label:'Restant du',val:fmtPDF(du)+' FCFA',color:du>0?[231,76,60]:TEXT2,bold:true},
-  ];
-  rows.forEach(r=>{
-    doc.setFont('helvetica',r.bold?'bold':'normal');
-    doc.setFontSize(r.bold?11:9);
-    doc.setTextColor(...TEXT2);
-    doc.text(r.label,M,y+3);
-    doc.setTextColor(...r.color);
-    doc.text(r.val,W-M,y+3,{align:'right'});
-    y+=7;
-  });
-
-  // Statut
-  y+=4;
-  const statut=du<=0?'SOLDE':'EN ATTENTE';
-  const statColor=du<=0?[46,204,113]:[231,76,60];
-  doc.setFillColor(...statColor);
-  doc.roundedRect(M,y,40,8,2,2,'F');
+  // ── MODALITES DE PAIEMENT
+  doc.setDrawColor(...ORANGE);doc.setLineWidth(0.5);
+  doc.line(M,y,W-M,y);y+=6;
   doc.setFont('helvetica','bold');
   doc.setFontSize(8);
-  doc.setTextColor(255,255,255);
-  doc.text(statut,M+20,y+5.5,{align:'center'});
+  doc.setTextColor(...NAVY);
+  doc.text('MODALITES DE PAIEMENT',M,y);y+=5;
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(80,100,120);
+  doc.text('Mode de paiement : Wave / Virement bancaire / Especes',M,y);y+=5;
+  doc.text('Numero Wave : [a completer]',M,y);y+=5;
+  doc.text('Delai de paiement : a reception',M,y);y+=10;
 
-  // Pied de page
+  // ── MERCI
+  doc.setFont('helvetica','oblique');
+  doc.setFontSize(9);
+  doc.setTextColor(...NAVY);
+  doc.text('Merci de votre confiance.',W/2,y,{align:'center'});y+=12;
+
+  // ── SIGNATURES
+  doc.setDrawColor(220,228,234);doc.setLineWidth(0.3);
+  doc.line(M,y,M+60,y);
+  doc.line(W-M-60,y,W-M,y);
   doc.setFont('helvetica','normal');
   doc.setFontSize(7.5);
-  doc.setTextColor(...TEXT2);
-  doc.text('MBENGUE ARCHIBUILDING — Journal de caisse',M,290);
-  doc.text('Merci de votre confiance.',W-M,290,{align:'right'});
+  doc.setTextColor(120,140,160);
+  doc.text('Signature du client',M+30,y+5,{align:'center'});
+  doc.text('Signature — MBENGUE ARCHIBUILDING',W-M-30,y+5,{align:'center'});
+
+  // Pied de page
+  doc.setFillColor(...ORANGE);
+  doc.rect(0,292,W,2,'F');
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(150,160,170);
+  doc.text('MBENGUE ARCHIBUILDING — Dakar, Senegal',W/2,289,{align:'center'});
 
   doc.save('Facture_'+(f.numFacture||factId)+'_'+(f.client||'client').replace(/\s/g,'_')+'.pdf');
   toast('Facture PDF telechargee !');
