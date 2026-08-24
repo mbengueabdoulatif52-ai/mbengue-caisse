@@ -460,7 +460,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 enableIndexedDbPersistence(db).catch(()=>{});
-window._fb={auth,db,doc,addDoc,setDoc,updateDoc,deleteDoc,collection,query,orderBy,where,onSnapshot,signOut,GoogleAuthProvider,signInWithPopup};
+window._fb={auth,db,doc,addDoc,setDoc,updateDoc,deleteDoc,collection,query,orderBy,where,onSnapshot,signOut,GoogleAuthProvider,signInWithPopup,onAuthStateChanged};
 </script>
 
 <script>
