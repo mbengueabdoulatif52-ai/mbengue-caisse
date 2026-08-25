@@ -347,24 +347,28 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <div class="pay-btn" onclick="setPay(this,'Virement')">Virement</div>
         </div>
       </div>
-      <!-- Avances -->
+      <!-- Facture -->
       <div class="fgrp" id="avance-section" style="display:none">
         <div class="divider"></div>
-        <div class="toggle-row">
-          <div>
-            <div class="toggle-lbl">C'est une avance</div>
-            <div class="toggle-sub">Paiement partiel — générer une facture</div>
-          </div>
-          <div class="sw" id="sw-avance" onclick="toggleAvance()"><div class="sw-dot"></div></div>
+        <div class="fgrp">
+          <div class="flbl">Facture</div>
+          <select class="fsel" id="fact-mode" onchange="onFactModeChange()">
+            <option value="none">Sans facture</option>
+            <option value="new">Créer une nouvelle facture</option>
+            <option value="existing">Rattacher à une facture existante</option>
+          </select>
         </div>
-        <div id="avance-fields" style="display:none;margin-top:8px">
+        <div id="fact-new-fields" style="display:none">
           <div class="fgrp">
-            <div class="flbl">Montant total de la prestation</div>
+            <div class="flbl">Montant total de la prestation (FCFA)</div>
             <input class="finp" id="f-total" type="text" placeholder="Ex: 200 000" inputmode="numeric" oninput="fmtAmt(this)">
           </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:-6px;margin-bottom:8px">Le numéro de facture sera généré automatiquement</div>
+        </div>
+        <div id="fact-existing-fields" style="display:none">
           <div class="fgrp">
-            <div class="flbl">N° de facture</div>
-            <input class="finp" id="f-facture-num" type="text" placeholder="Fact. n°001">
+            <div class="flbl">Sélectionner la facture</div>
+            <select class="fsel" id="f-fact-select"></select>
           </div>
         </div>
       </div>
@@ -677,10 +681,10 @@ function initForm(){
   document.getElementById('f-msg').textContent='';
   document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
   setPay(document.querySelector('.pay-btn'),'Wave');
-  avanceOn=false;
-  const sw=document.getElementById('sw-avance');
-  sw.classList.remove('on');
-  document.getElementById('avance-fields').style.display='none';
+  const factMode=document.getElementById('fact-mode');
+  if(factMode)factMode.value='none';
+  document.getElementById('fact-new-fields').style.display='none';
+  document.getElementById('fact-existing-fields').style.display='none';
   updateCatColor();
 }
 function setType(t){
@@ -699,14 +703,35 @@ function setPay(el,mode){
   document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');payMode=mode;
 }
+function onFactModeChange(){
+  const mode=document.getElementById('fact-mode')?.value||'none';
+  document.getElementById('fact-new-fields').style.display=mode==='new'?'block':'none';
+  document.getElementById('fact-existing-fields').style.display=mode==='existing'?'block':'none';
+  // Remplir la liste des factures partielles/en attente
+  if(mode==='existing'){
+    const sel=document.getElementById('f-fact-select');
+    const available=factures.filter(f=>f.statut!=='paid');
+    sel.innerHTML=available.length
+      ?available.map(f=>`<option value="${f.id}">${f.numFacture} — ${f.client} — ${fmt(f.montantTotal)} F</option>`).join('')
+      :'<option value="">Aucune facture en attente</option>';
+  }
+}
 function toggleAvance(){
-  avanceOn=!avanceOn;
-  const sw=document.getElementById('sw-avance');
-  sw.classList.toggle('on',avanceOn);
-  document.getElementById('avance-fields').style.display=avanceOn?'block':'none';
+  onFactModeChange();
 }
 function updateCatColor(){}
 window.setType=setType;window.setPay=setPay;window.toggleAvance=toggleAvance;window.updateCatColor=updateCatColor;window.fmtAmt=fmtAmt;
+
+async function getNextFactNum(){
+  const{db,doc,getDoc,setDoc}=window._fb;
+  const ref=doc(db,'users/'+uid+'/data/compteurs');
+  const snap=await getDoc(ref);
+  const current=(snap.exists()&&snap.data().factures)||0;
+  const next=current+1;
+  await setDoc(ref,{factures:next},{merge:true});
+  const year=new Date().getFullYear();
+  return'FACT-'+year+'-'+String(next).padStart(3,'0');
+}
 
 async function saveOp(){
   const{db,collection,addDoc,doc,setDoc}=window._fb;
@@ -722,22 +747,43 @@ async function saveOp(){
   const data={montant:amt,type:opType,categorie:cat,description:desc,client,date,modePaiement:payMode,piece,ts:new Date().toISOString()};
   try{
     const ref=await addDoc(collection(db,'users/'+uid+'/operations'),data);
-    // Si avance, créer/mettre à jour la facture
-    if(avanceOn&&opType==='entree'){
+    const factMode=document.getElementById('fact-mode')?.value||'none';
+    if(opType==='entree'&&factMode==='new'){
+      // Créer une nouvelle facture avec numéro auto
       const total=parseAmt(document.getElementById('f-total'));
-      const numFact=document.getElementById('f-facture-num').value.trim();
       if(total>0){
+        const numFact=await getNextFactNum();
         const factData={
           montantTotal:total,client,description:desc,categorie:cat,
-          dateEmission:date,numFacture:numFact||'',
-          statut:'partial',
+          dateEmission:date,numFacture:numFact,
+          statut:amt>=total?'paid':'partial',
           paiements:[{montant:amt,date,mode:payMode,type:'avance',opId:ref.id}],
           ts:new Date().toISOString()
         };
         await addDoc(collection(db,'users/'+uid+'/factures'),factData);
+        toast('Opération + Facture '+numFact+' créées ✓');
+      } else {
+        toast('Opération enregistrée ✓');
       }
+    } else if(opType==='entree'&&factMode==='existing'){
+      // Rattacher à une facture existante
+      const factId=document.getElementById('f-fact-select')?.value;
+      if(factId){
+        const fact=factures.find(f=>f.id===factId);
+        if(fact){
+          const{updateDoc,doc:fbDoc}=window._fb;
+          const newPaiem=[...(fact.paiements||[]),{montant:amt,date,mode:payMode,type:'solde',opId:ref.id}];
+          const enc=newPaiem.reduce((a,p)=>a+p.montant,0);
+          const statut=enc>=fact.montantTotal?'paid':'partial';
+          await updateDoc(fbDoc(db,'users/'+uid+'/factures/'+factId),{paiements:newPaiem,statut});
+          toast('Paiement rattaché à '+fact.numFacture+' ✓');
+        }
+      } else {
+        toast('Opération enregistrée ✓');
+      }
+    } else {
+      toast('Opération enregistrée ✓');
     }
-    toast('Opération enregistrée ✓');
     goP('dash',document.querySelector('.ni'));
   }catch(e){msg.textContent='Erreur: '+e.message;}
 }
@@ -924,7 +970,7 @@ function factCard(f){
     <div class="fact-actions">
       <div class="act-btn" onclick="genFacturePDF('${f.id}')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</div>
       <div class="act-btn" onclick="deleteFact('${f.id}')" style="color:var(--red);border-color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> Supprimer</div>
-      ${du>0?`<div class="act-btn primary" onclick="encaisserSolde('${f.id}',${du})"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Encaisser</div>`:''}
+
     </div>
   </div>`;
 }
