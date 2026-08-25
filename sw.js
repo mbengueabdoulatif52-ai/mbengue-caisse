@@ -1,4 +1,4 @@
-const CACHE = 'mbcaisse-v1';
+const CACHE = 'mbcaisse-v3';
 const ASSETS = ['/', '/index.html', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -18,7 +18,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   if(e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
-  const bypass = ['firebaseio.com','googleapis.com','firebaseapp.com','gstatic.com'];
+  const bypass = ['firebaseio.com','googleapis.com','firebaseapp.com','gstatic.com','cdnjs.cloudflare.com'];
   if(bypass.some(d => url.hostname.includes(d))) return;
   e.respondWith(
     caches.match(e.request).then(cached => {
