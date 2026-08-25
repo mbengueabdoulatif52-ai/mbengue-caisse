@@ -764,6 +764,7 @@ function openOpDetail(id){
     ${detailRow('Mode de paiement',o.modePaiement||'—')}
     ${detailRow('Pièce justif.',o.piece||'—')}
     <div style="display:flex;gap:8px;margin-top:16px">
+      <button onclick="editOp('${o.id}')" style="flex:1;padding:12px;border-radius:10px;border:0.5px solid var(--orange);background:#fff8f0;color:var(--orange);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Modifier</button>
       <button onclick="deleteOp('${o.id}',this)" style="flex:1;padding:12px;border-radius:10px;border:0.5px solid var(--border);background:var(--surf2);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Supprimer</button>
     </div>
   </div>`;
@@ -776,10 +777,104 @@ function detailRow(label,val){
     <span style="font-size:12px;font-weight:500;color:var(--text)">${val}</span>
   </div>`;
 }
+function editOp(id){
+  const o=ops.find(x=>x.id===id);
+  if(!o)return;
+  document.querySelector('.modal-bg')?.remove();
+  const bg=document.createElement('div');
+  bg.className='modal-bg';
+  const cats=o.type==='entree'?CATS_ENTREE:CATS_SORTIE;
+  const catOpts=cats.map(c=>`<option value="${c}" ${o.categorie===c?'selected':''}>${c}</option>`).join('');
+  bg.innerHTML=`<div class="modal">
+    <div class="modal-title">Modifier l'opération
+      <button class="close-btn" onclick="this.closest('.modal-bg').remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="fgrp">
+      <div class="flbl">Montant (FCFA)</div>
+      <input class="finp" id="e-amt" type="text" value="${fmt(o.montant)}" inputmode="numeric" oninput="fmtAmt(this)" data-raw="${o.montant}">
+    </div>
+    <div class="fgrp">
+      <div class="flbl">Catégorie</div>
+      <select class="fsel" id="e-cat">${catOpts}</select>
+    </div>
+    <div class="fgrp">
+      <div class="flbl">Description</div>
+      <input class="finp" id="e-desc" type="text" value="${o.description||''}">
+    </div>
+    <div class="fgrp">
+      <div class="flbl">Client / Fournisseur</div>
+      <input class="finp" id="e-client" type="text" value="${o.client||''}">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fgrp">
+        <div class="flbl">Date</div>
+        <input class="finp" id="e-date" type="date" value="${o.date||''}">
+      </div>
+      <div class="fgrp">
+        <div class="flbl">Pièce justif.</div>
+        <input class="finp" id="e-piece" type="text" value="${o.piece||''}">
+      </div>
+    </div>
+    <div class="fgrp">
+      <div class="flbl">Mode de paiement</div>
+      <div class="pay-grid">
+        <div class="pay-btn ${o.modePaiement==='Wave'?'active':''}" onclick="setPay(this,'Wave')">Wave</div>
+        <div class="pay-btn ${o.modePaiement==='Espèces'?'active':''}" onclick="setPay(this,'Espèces')">Espèces</div>
+        <div class="pay-btn ${o.modePaiement==='Virement'?'active':''}" onclick="setPay(this,'Virement')">Virement</div>
+      </div>
+    </div>
+    <div class="fmsg" id="e-msg"></div>
+    <button onclick="saveEditOp('${o.id}')" class="btn-save" style="margin-top:12px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="18" height="18"><path d="M20 6L9 17l-5-5"/></svg>
+      Enregistrer les modifications
+    </button>
+  </div>`;
+  bg.addEventListener('click',e=>{if(e.target===bg)bg.remove();});
+  document.body.appendChild(bg);
+  // Init mode paiement
+  payMode=o.modePaiement||'Wave';
+}
+
+async function saveEditOp(id){
+  const{db,doc,updateDoc}=window._fb;
+  const amt=parseAmt(document.getElementById('e-amt'));
+  const date=document.getElementById('e-date').value;
+  const msg=document.getElementById('e-msg');
+  if(!amt||!date){msg.textContent='Montant et date obligatoires.';return;}
+  msg.textContent='';
+  try{
+    await updateDoc(doc(db,'users/'+uid+'/operations/'+id),{
+      montant:amt,
+      categorie:document.getElementById('e-cat').value,
+      description:document.getElementById('e-desc').value.trim(),
+      client:document.getElementById('e-client').value.trim(),
+      date,
+      modePaiement:payMode,
+      piece:document.getElementById('e-piece').value.trim(),
+    });
+    document.querySelector('.modal-bg')?.remove();
+    toast('Opération modifiée ✓');
+  }catch(e){msg.textContent='Erreur: '+e.message;}
+}
+
 async function deleteOp(id,btn){
   if(!confirm('Supprimer cette opération ?'))return;
-  const{db,doc,deleteDoc}=window._fb;
-  try{await deleteDoc(doc(db,'users/'+uid+'/operations/'+id));document.querySelector('.modal-bg')?.remove();toast('Opération supprimée');}
+  const{db,doc,deleteDoc,updateDoc}=window._fb;
+  try{
+    await deleteDoc(doc(db,'users/'+uid+'/operations/'+id));
+    // Supprimer le paiement lié dans les factures
+    for(const f of factures){
+      if(!f.paiements)continue;
+      const newPaiem=f.paiements.filter(p=>p.opId!==id);
+      if(newPaiem.length!==f.paiements.length){
+        const enc=newPaiem.reduce((a,p)=>a+p.montant,0);
+        const statut=enc<=0?'pending':enc>=f.montantTotal?'paid':'partial';
+        await updateDoc(doc(db,'users/'+uid+'/factures/'+f.id),{paiements:newPaiem,statut});
+      }
+    }
+    document.querySelector('.modal-bg')?.remove();
+    toast('Opération supprimée');
+  }
   catch(e){toast('Erreur: '+e.message);}
 }
 window.openOpDetail=openOpDetail;window.deleteOp=deleteOp;
@@ -867,7 +962,7 @@ async function confirmEncaissement(factId){
   if(!amt||!date){toast('Montant et date requis');return;}
   const fact=factures.find(f=>f.id===factId);
   try{
-    const paiem={montant:amt,date,mode:payMode,type:'solde'};
+    const paiem={montant:amt,date,mode:payMode,type:'solde',opId:'manual_'+Date.now()};
     const newPaiem=[...(fact.paiements||[]),paiem];
     const enc=newPaiem.reduce((a,p)=>a+p.montant,0);
     const statut=enc>=fact.montantTotal?'paid':'partial';
