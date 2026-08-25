@@ -862,14 +862,13 @@ async function deleteOp(id,btn){
   const{db,doc,deleteDoc,updateDoc}=window._fb;
   try{
     await deleteDoc(doc(db,'users/'+uid+'/operations/'+id));
-    // Supprimer le paiement lié dans les factures
+    // Supprimer les factures liées à cette opération
     for(const f of factures){
       if(!f.paiements)continue;
-      const newPaiem=f.paiements.filter(p=>p.opId!==id);
-      if(newPaiem.length!==f.paiements.length){
-        const enc=newPaiem.reduce((a,p)=>a+p.montant,0);
-        const statut=enc<=0?'pending':enc>=f.montantTotal?'paid':'partial';
-        await updateDoc(doc(db,'users/'+uid+'/factures/'+f.id),{paiements:newPaiem,statut});
+      const estLie=f.paiements.some(p=>p.opId===id);
+      if(estLie){
+        // Supprimer toute la facture
+        await deleteDoc(doc(db,'users/'+uid+'/factures/'+f.id));
       }
     }
     document.querySelector('.modal-bg')?.remove();
@@ -924,10 +923,20 @@ function factCard(f){
     </div>
     <div class="fact-actions">
       <div class="act-btn" onclick="genFacturePDF('${f.id}')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</div>
+      <div class="act-btn" onclick="deleteFact('${f.id}')" style="color:var(--red);border-color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> Supprimer</div>
       ${du>0?`<div class="act-btn primary" onclick="encaisserSolde('${f.id}',${du})"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> Encaisser</div>`:''}
     </div>
   </div>`;
 }
+async function deleteFact(factId){
+  if(!confirm('Supprimer cette facture définitivement ?'))return;
+  const{db,doc,deleteDoc}=window._fb;
+  try{
+    await deleteDoc(doc(db,'users/'+uid+'/factures/'+factId));
+    toast('Facture supprimée');
+  }catch(e){toast('Erreur: '+e.message);}
+}
+
 function setFactFilter(el,f){
   document.querySelectorAll('#fact-tabs .ftab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');factFilter=f;renderFactures();
