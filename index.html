@@ -329,15 +329,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div class="flbl">Client / Fournisseur</div>
         <input class="finp" id="f-client" type="text" placeholder="Ex: Talla DIOP">
       </div>
-      <div class="row2">
-        <div class="fgrp">
-          <div class="flbl">Date</div>
-          <input class="finp" id="f-date" type="date">
-        </div>
-        <div class="fgrp">
-          <div class="flbl">Pièce justif.</div>
-          <input class="finp" id="f-piece" type="text" placeholder="Fact. n°001">
-        </div>
+      <div class="fgrp">
+        <div class="flbl">Date</div>
+        <input class="finp" id="f-date" type="date">
       </div>
       <div class="fgrp">
         <div class="flbl">Mode de paiement</div>
@@ -465,7 +459,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 enableIndexedDbPersistence(db).catch(()=>{});
-window._fb={auth,db,doc,addDoc,setDoc,updateDoc,deleteDoc,collection,query,orderBy,where,onSnapshot,signOut,GoogleAuthProvider,signInWithPopup,onAuthStateChanged};
+window._fb={auth,db,doc,addDoc,setDoc,getDoc,updateDoc,deleteDoc,collection,query,orderBy,where,onSnapshot,signOut,GoogleAuthProvider,signInWithPopup,onAuthStateChanged};
 </script>
 
 <script>
@@ -675,7 +669,6 @@ function initForm(){
   document.getElementById('f-amt').value='';
   document.getElementById('f-desc').value='';
   document.getElementById('f-client').value='';
-  document.getElementById('f-piece').value='';
   document.getElementById('f-total').value='';
   document.getElementById('f-facture-num').value='';
   document.getElementById('f-msg').textContent='';
@@ -740,11 +733,10 @@ async function saveOp(){
   const client=document.getElementById('f-client').value.trim();
   const date=document.getElementById('f-date').value;
   const cat=document.getElementById('f-cat').value;
-  const piece=document.getElementById('f-piece').value.trim();
   const msg=document.getElementById('f-msg');
   if(!amt||!date){msg.textContent='Montant et date obligatoires.';return;}
   msg.textContent='';
-  const data={montant:amt,type:opType,categorie:cat,description:desc,client,date,modePaiement:payMode,piece,ts:new Date().toISOString()};
+  const data={montant:amt,type:opType,categorie:cat,description:desc,client,date,modePaiement:payMode,ts:new Date().toISOString()};
   try{
     const ref=await addDoc(collection(db,'users/'+uid+'/operations'),data);
     const factMode=document.getElementById('fact-mode')?.value||'none';
@@ -808,7 +800,6 @@ function openOpDetail(id){
     ${detailRow('Client',o.client||'—')}
     ${detailRow('Catégorie',o.categorie||'—')}
     ${detailRow('Mode de paiement',o.modePaiement||'—')}
-    ${detailRow('Pièce justif.',o.piece||'—')}
     <div style="display:flex;gap:8px;margin-top:16px">
       <button onclick="editOp('${o.id}')" style="flex:1;padding:12px;border-radius:10px;border:0.5px solid var(--orange);background:#fff8f0;color:var(--orange);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Modifier</button>
       <button onclick="deleteOp('${o.id}',this)" style="flex:1;padding:12px;border-radius:10px;border:0.5px solid var(--border);background:var(--surf2);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Supprimer</button>
@@ -896,7 +887,6 @@ async function saveEditOp(id){
       client:document.getElementById('e-client').value.trim(),
       date,
       modePaiement:payMode,
-      piece:document.getElementById('e-piece').value.trim(),
     });
     document.querySelector('.modal-bg')?.remove();
     toast('Opération modifiée ✓');
