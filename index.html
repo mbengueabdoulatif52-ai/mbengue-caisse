@@ -449,6 +449,42 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
   </div>
 
+  <!-- PROFIL / PARAMÈTRES -->
+  <div id="page-profil" class="page">
+    <div style="padding:14px">
+      <!-- Compte -->
+      <div class="card">
+        <div class="ct">Compte</div>
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0">
+          <div id="profil-av" style="width:48px;height:48px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#fff;flex-shrink:0">M</div>
+          <div>
+            <div id="profil-name" style="font-size:14px;font-weight:600;color:var(--text)">—</div>
+            <div id="profil-email" style="font-size:12px;color:var(--text3);margin-top:2px">—</div>
+          </div>
+        </div>
+        <button onclick="signOut()" style="width:100%;padding:11px;border-radius:10px;border:0.5px solid var(--border);background:var(--surf2);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);margin-top:8px">
+          Déconnexion
+        </button>
+      </div>
+
+      <!-- Sécurité -->
+      <div class="card">
+        <div class="ct">Sécurité</div>
+        <div id="security-section"></div>
+      </div>
+
+      <!-- À propos -->
+      <div class="card" style="margin-bottom:0">
+        <div class="ct">À propos</div>
+        <div style="font-size:12px;color:var(--text3);line-height:1.6">
+          <div>MBENGUE ARCHIBUILDING</div>
+          <div>Journal de caisse — Version 1.0</div>
+          <div style="margin-top:4px;color:var(--orange)">Développé par MBENGUE ARCHIBUILDING</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- NAVBAR -->
   <nav class="navbar">
     <button class="ni active" onclick="goP('dash',this)">
@@ -472,6 +508,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <button class="ni" onclick="goP('stats',this)">
       <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Stats
+    </button>
+    <button class="ni" onclick="goP('profil',this)">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Profil
     </button>
   </nav>
 </div>
@@ -539,6 +579,7 @@ function goP(p,btn){
   else if(p==='journal')renderJournal();
   else if(p==='factures')renderFactures();
   else if(p==='stats')renderStats();
+  else if(p==='profil')renderProfil();
   else if(p==='form')initForm();
   window._curPage=p;
 }
@@ -1453,7 +1494,7 @@ function pinKey(k){
         } else {
           if(pinInput===overlay._firstPin){
             setPin(pinInput);pinInput='';overlay.remove();
-            toast('Code PIN créé ✓');resetLockTimer();
+            toast('Code PIN créé ✓');resetLockTimer();renderSecuritySection();
             if(typeof PublicKeyCredential!=='undefined'){
               PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(avail=>{
                 if(avail){setTimeout(async()=>{const ok=await registerPasskey();if(ok)toast('Empreinte enregistrée ✓');},500);}
@@ -1698,6 +1739,70 @@ function openClientFiche(client){
   </div>`;
   bg.addEventListener('click',e=>{if(e.target===bg)bg.remove();});
   document.body.appendChild(bg);
+}
+
+function renderProfil(){
+  const{auth}=window._fb;
+  const user=auth.currentUser;
+  if(user){
+    const name=(user.displayName||user.email||'').split(' ')[0];
+    document.getElementById('profil-name').textContent=user.displayName||'Utilisateur';
+    document.getElementById('profil-email').textContent=user.email||'';
+    const av=document.getElementById('profil-av');
+    if(user.photoURL){av.innerHTML=`<img src="${user.photoURL}" style="width:48px;height:48px;border-radius:50%;object-fit:cover">`;}
+    else{av.textContent=name[0]?.toUpperCase()||'M';}
+  }
+  renderSecuritySection();
+}
+
+function renderSecuritySection(){
+  const el=document.getElementById('security-section');
+  if(!el)return;
+  const hasp=hasPin();
+  const hasPasskey=localStorage.getItem('mbcaisse-passkey')==='1';
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--text)">Code PIN</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${hasp?'Activé — 6 chiffres':'Non configuré'}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${hasp?`
+          <button onclick="setupPin()" style="padding:6px 12px;border-radius:8px;border:0.5px solid var(--orange);background:transparent;color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Modifier</button>
+          <button onclick="removePin()" style="padding:6px 12px;border-radius:8px;border:0.5px solid var(--border);background:transparent;color:var(--red);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Supprimer</button>
+        `:`<button onclick="setupPin()" style="padding:6px 14px;border-radius:8px;border:none;background:var(--orange);color:#fff;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">Activer</button>`}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--text)">Empreinte digitale</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${hasPasskey?'✓ Activée':'Non configurée'}</div>
+      </div>
+      <button onclick="registerPasskey().then(ok=>{if(ok){renderSecuritySection();toast('Empreinte enregistrée ✓');}else{toast('Non disponible ou annulé');}})" 
+        style="padding:6px 14px;border-radius:8px;border:0.5px solid var(--border);background:var(--surf2);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);${!hasp?'opacity:.4;pointer-events:none':''}"
+        ${!hasp?'disabled':''}>
+        ${hasPasskey?'Réenregistrer':'Activer'}
+      </button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--text)">Verrouiller maintenant</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Verrouillage auto après 5 min</div>
+      </div>
+      <button onclick="lockApp()" style="padding:6px 14px;border-radius:8px;border:0.5px solid var(--border);background:var(--surf2);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);${!hasp?'opacity:.4;pointer-events:none':''}" ${!hasp?'disabled':''}>
+        Verrouiller
+      </button>
+    </div>
+  `;
+}
+
+function signOut(){
+  if(!confirm('Se déconnecter ?'))return;
+  const{auth,signOut:fbSignOut}=window._fb;
+  fbSignOut(auth).then(()=>{
+    document.getElementById('app').style.display='none';
+    document.getElementById('auth').style.display='flex';
+  });
 }
 
 let tt;
