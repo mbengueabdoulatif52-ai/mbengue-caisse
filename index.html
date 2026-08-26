@@ -1558,30 +1558,44 @@ function renderJournal(){
 
 // ── EXPORT EXCEL
 function exportExcel(){
+  if(typeof XLSX==='undefined'){toast('Chargement en cours...');return;}
   const t=opsOfMonth();
   if(!t.length){toast('Aucune opération à exporter');return;}
-  // CSV avec BOM pour Excel
-  const bom='﻿';
-  const headers=['Date','Type','Catégorie','Description','Client','Montant (FCFA)','Mode paiement'];
-  const rows=t.map(o=>[
-    fmtDate(o.date),
-    o.type==='entree'?'Entrée':'Sortie',
-    o.categorie||'',
-    o.description||'',
-    o.client||'',
-    o.montant||0,
-    o.modePaiement||''
-  ]);
-  const csv=bom+[headers,...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  const ym_=curYM();
-  a.download='Journal_MB_'+ym_+'.csv';
-  a.click();
-  URL.revokeObjectURL(url);
-  toast('Export téléchargé ✓');
+  const wb=XLSX.utils.book_new();
+  const entrees=t.filter(o=>o.type==='entree');
+  const sorties=t.filter(o=>o.type==='sortie');
+  const totalE=entrees.reduce((s,o)=>s+o.montant,0);
+  const totalS=sorties.reduce((s,o)=>s+o.montant,0);
+  const aoa=[
+    ['MBENGUE ARCHIBUILDING — Journal de caisse','','','','','',''],
+    ['Période : '+MOIS[curMonth-1]+' '+curYear,'','','','','',''],
+    ['Exporté le : '+new Date().toLocaleDateString('fr-FR'),'','','','','',''],
+    [],
+    ['Date','Type','Catégorie','Description','Client','Montant (FCFA)','Mode de paiement'],
+    ...t.map(o=>[
+      fmtDate(o.date),
+      o.type==='entree'?'Entrée':'Sortie',
+      o.categorie||'',
+      o.description||'',
+      o.client||'',
+      o.montant||0,
+      o.modePaiement||''
+    ]),
+    [],
+    ['','','','','Total entrées',totalE,''],
+    ['','','','','Total sorties',totalS,''],
+    ['','','','','Solde net',totalE-totalS,''],
+  ];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols']=[{wch:12},{wch:10},{wch:28},{wch:40},{wch:25},{wch:18},{wch:16}];
+  ws['!merges']=[
+    {s:{r:0,c:0},e:{r:0,c:6}},
+    {s:{r:1,c:0},e:{r:1,c:6}},
+    {s:{r:2,c:0},e:{r:2,c:6}},
+  ];
+  XLSX.utils.book_append_sheet(wb,ws,'Journal '+MOIS[curMonth-1]+' '+curYear);
+  XLSX.writeFile(wb,'Journal_MB_'+curYM()+'.xlsx');
+  toast('Export Excel téléchargé ✓');
 }
 
 // ── STATS MODE
