@@ -564,14 +564,27 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('f-date').value=today.toISOString().split('T')[0];
 
   checkOnline();
-  checkLockOnStart();
   onAuthStateChanged(auth,user=>{
     document.getElementById('loading').style.display='none';
     if(user){
       uid=user.uid;
-      document.getElementById('auth').style.display='none';
-      document.getElementById('app').style.display='flex';
-      subscribe();
+      // Vérifier PIN avant d'afficher l'app
+      if(hasPin()){
+        document.getElementById('auth').style.display='none';
+        isLocked=true;
+        showLockScreen(false);
+        // Quand le PIN est validé, montrer l'app
+        window._onPinSuccess=()=>{
+          document.getElementById('app').style.display='flex';
+          subscribe();
+          resetLockTimer();
+        };
+      } else {
+        document.getElementById('auth').style.display='none';
+        document.getElementById('app').style.display='flex';
+        subscribe();
+        resetLockTimer();
+      }
     } else {
       document.getElementById('auth').style.display='flex';
       document.getElementById('app').style.display='none';
@@ -1505,7 +1518,11 @@ async function tryBiometric(){
     });
     if(result){
       const overlay=document.getElementById('lock-overlay');
-      if(overlay){overlay.remove();isLocked=false;resetLockTimer();}
+      if(overlay){
+        overlay.remove();isLocked=false;
+        if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
+        else{resetLockTimer();}
+      }
     }
   }catch(e){
     if(e.name!=='NotAllowedError'){
@@ -1566,34 +1583,64 @@ function exportExcel(){
   const sorties=t.filter(o=>o.type==='sortie');
   const totalE=entrees.reduce((s,o)=>s+o.montant,0);
   const totalS=sorties.reduce((s,o)=>s+o.montant,0);
-  const aoa=[
-    ['MBENGUE ARCHIBUILDING — Journal de caisse','','','','','',''],
-    ['Période : '+MOIS[curMonth-1]+' '+curYear,'','','','','',''],
-    ['Exporté le : '+new Date().toLocaleDateString('fr-FR'),'','','','','',''],
-    [],
-    ['Date','Type','Catégorie','Description','Client','Montant (FCFA)','Mode de paiement'],
-    ...t.map(o=>[
-      fmtDate(o.date),
-      o.type==='entree'?'Entrée':'Sortie',
-      o.categorie||'',
+
+  // ── FEUILLE 1 : Journal de caisse
+  const ws1Data=[
+    ['Journal de caisse — MBENGUE ARCHIBUILDING',null,null,null,null,null,null,null,null,null],
+    ['Suivi des entrées et sorties financières — '+MOIS[curMonth-1]+' '+curYear,null,null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null,null,null],
+    ['Date',"Nature de l'opération",'Client / Fournisseur','Type','Catégorie','Entrée (FCFA)','Sortie (FCFA)','Mode de paiement','N° Facture','Solde (FCFA)'],
+  ];
+  t.forEach((o,i)=>{
+    const row=i+5; // ligne Excel (1-based), données commencent à ligne 5
+    ws1Data.push([
+      o.date?new Date(o.date):null,
       o.description||'',
       o.client||'',
-      o.montant||0,
-      o.modePaiement||''
-    ]),
-    [],
-    ['','','','','Total entrées',totalE,''],
-    ['','','','','Total sorties',totalS,''],
-    ['','','','','Solde net',totalE-totalS,''],
+      o.type==='entree'?'Entrée':'Sortie',
+      o.categorie||'',
+      o.type==='entree'?o.montant:null,
+      o.type==='sortie'?o.montant:null,
+      o.modePaiement||'',
+      '',
+      {f:'SUM($F$5:F'+row+')-SUM($G$5:G'+row+')'}
+    ]);
+  });
+  // Ligne totaux
+  ws1Data.push([null,null,null,null,'TOTAL',totalE,totalS,null,null,totalE-totalS]);
+
+  const ws1=XLSX.utils.aoa_to_sheet(ws1Data);
+  ws1['!cols']=[{wch:12},{wch:40},{wch:25},{wch:10},{wch:22},{wch:16},{wch:16},{wch:16},{wch:16},{wch:16}];
+  ws1['!merges']=[
+    {s:{r:0,c:0},e:{r:0,c:9}},
+    {s:{r:1,c:0},e:{r:1,c:9}},
   ];
-  const ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:12},{wch:10},{wch:28},{wch:40},{wch:25},{wch:18},{wch:16}];
-  ws['!merges']=[
-    {s:{r:0,c:0},e:{r:0,c:6}},
-    {s:{r:1,c:0},e:{r:1,c:6}},
-    {s:{r:2,c:0},e:{r:2,c:6}},
+
+  // ── FEUILLE 2 : Résumé par catégorie
+  const cats=[...new Set(t.map(o=>o.categorie).filter(Boolean))];
+  const ws2Data=[
+    ['Résumé mensuel par catégorie',null,null,null],
+    ['Données du journal — '+MOIS[curMonth-1]+' '+curYear,null,null,null],
+    [null,null,null,null],
+    ['Catégorie','Total Entrées (FCFA)','Total Sorties (FCFA)','Solde net (FCFA)'],
   ];
-  XLSX.utils.book_append_sheet(wb,ws,'Journal '+MOIS[curMonth-1]+' '+curYear);
+  cats.forEach(cat=>{
+    const e=t.filter(o=>o.type==='entree'&&o.categorie===cat).reduce((s,o)=>s+o.montant,0);
+    const s=t.filter(o=>o.type==='sortie'&&o.categorie===cat).reduce((s,o)=>s+o.montant,0);
+    ws2Data.push([cat,e||null,s||null,e-s]);
+  });
+  ws2Data.push([null,null,null,null]);
+  ws2Data.push(['TOTAL',totalE,totalS,totalE-totalS]);
+
+  const ws2=XLSX.utils.aoa_to_sheet(ws2Data);
+  ws2['!cols']=[{wch:28},{wch:20},{wch:20},{wch:16}];
+  ws2['!merges']=[
+    {s:{r:0,c:0},e:{r:0,c:3}},
+    {s:{r:1,c:0},e:{r:1,c:3}},
+  ];
+
+  XLSX.utils.book_append_sheet(wb,ws1,'Journal de caisse');
+  XLSX.utils.book_append_sheet(wb,ws2,'Résumé');
   XLSX.writeFile(wb,'Journal_MB_'+curYM()+'.xlsx');
   toast('Export Excel téléchargé ✓');
 }
