@@ -838,21 +838,19 @@ async function saveOp(){
     const factMode=document.getElementById('fact-mode')?.value||'none';
     if(opType==='entree'&&factMode==='new'){
       // Créer une nouvelle facture avec numéro auto
-      const total=parseAmt(document.getElementById('f-total'));
-      if(total>0){
-        const numFact=await getNextFactNum();
-        const factData={
-          montantTotal:total,client,description:desc,categorie:cat,
-          dateEmission:date,numFacture:numFact,
-          statut:amt>=total?'paid':'partial',
-          paiements:[{montant:amt,date,mode:payMode,type:'avance',opId:ref.id}],
-          ts:new Date().toISOString()
-        };
-        await addDoc(collection(db,'users/'+uid+'/factures'),factData);
-        toast('Opération + Facture '+numFact+' créées ✓');
-      } else {
-        toast('Opération enregistrée ✓');
-      }
+      const totalInput=parseAmt(document.getElementById('f-total'));
+      const total=totalInput>0?totalInput:amt; // Si total non rempli, = montant saisi
+      const numFact=await getNextFactNum();
+      const type_paiem=amt>=total?'complet':'avance';
+      const statut=amt>=total?'paid':'partial';
+      const factData={
+        montantTotal:total,client,description:desc,categorie:cat,
+        dateEmission:date,numFacture:numFact,statut,
+        paiements:[{montant:amt,date,mode:payMode,type:type_paiem,opId:ref.id}],
+        ts:new Date().toISOString()
+      };
+      await addDoc(collection(db,'users/'+uid+'/factures'),factData);
+      toast('Opération + Facture '+numFact+' créées ✓');
     } else if(opType==='entree'&&factMode==='existing'){
       // Rattacher à une facture existante
       const factId=document.getElementById('f-fact-select')?.value;
@@ -1626,17 +1624,13 @@ function exportExcel(){
   const totalE=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
   const totalS=t.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
 
-  // ── FEUILLE 1 : Journal de caisse (identique au modèle)
-  const ws1Data=[
+  // ── FEUILLE 1 : Journal de caisse
+  const rows=[
     ['Journal de caisse — MBENGUE ARCHIBUILDING',null,null,null,null,null,null,null,null,null],
     ['Suivi des entrées et sorties financières — '+MOIS[curMonth-1]+' '+curYear,null,null,null,null,null,null,null,null,null],
     [null,null,null,null,null,null,null,null,null,null],
     ['Date',"Nature de l'opération",'Client / Fournisseur','Type','Catégorie','Entrée (FCFA)','Sortie (FCFA)','Mode de paiement','N° Facture','Solde (FCFA)'],
-  ];
-  // Données ligne par ligne avec formule solde cumulé
-  t.forEach((o,i)=>{
-    const excelRow=i+5; // données commencent ligne 5
-    ws1Data.push([
+    ...t.map((o,i)=>[
       o.date?new Date(o.date+' 00:00:00'):null,
       o.description||'',
       o.client||'',
@@ -1646,57 +1640,36 @@ function exportExcel(){
       o.type==='sortie'?o.montant:null,
       o.modePaiement||'',
       '',
-      {f:'SUM($F$5:F'+excelRow+')-SUM($G$5:G'+excelRow+')'}
-    ]);
-  });
-  // Ligne total
-  const lastRow=t.length+4;
-  ws1Data.push([null,null,null,null,'TOTAL',totalE,totalS,null,null,totalE-totalS]);
-
-  const ws1=XLSX.utils.aoa_to_sheet(ws1Data);
-  // Largeurs colonnes (mêmes que le modèle)
-  ws1['!cols']=[{wch:12},{wch:42},{wch:24},{wch:10},{wch:18},{wch:14},{wch:14},{wch:16},{wch:16},{wch:14}];
-  // Fusions titre
-  ws1['!merges']=[
-    {s:{r:0,c:0},e:{r:0,c:9}},
-    {s:{r:1,c:0},e:{r:1,c:9}},
+      {f:'SUM($F$5:F'+(i+5)+')-SUM($G$5:G'+(i+5)+')'}
+    ]),
+    [null,null,null,null,'TOTAL',totalE,totalS,null,null,totalE-totalS],
   ];
+  const ws1=XLSX.utils.aoa_to_sheet(rows);
+  ws1['!cols']=[{wch:12},{wch:42},{wch:24},{wch:10},{wch:22},{wch:14},{wch:14},{wch:16},{wch:16},{wch:14}];
+  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:9}},{s:{r:1,c:0},e:{r:1,c:9}}];
 
-  // ── FEUILLE 2 : Résumé avec SUMIFS (identique au modèle)
-  const cats=[
-    'Prestations architecturales',
-    'Transport et véhicules',
-    'Charges exploitation',
-    'Prêts et avances accordés',
-    'Déplacements',
-    'Remboursements reçus',
-    'Autres entrées',
-    'Autres sorties',
+  // ── FEUILLE 2 : Résumé avec SUMIFS
+  const cats2=[
+    'Prestations architecturales','Transport et véhicules',
+    'Charges exploitation','Prêts et avances accordés',
+    'Déplacements','Remboursements reçus','Autres entrées','Autres sorties'
   ];
-  const ws2Data=[
+  const rows2=[
     ['Résumé mensuel par catégorie',null,null,null],
     ['Se met à jour automatiquement à partir du Journal de caisse',null,null,null],
     [null,null,null,null],
     ['Catégorie','Total Entrées (FCFA)','Total Sorties (FCFA)','Solde net (FCFA)'],
-  ];
-  cats.forEach((cat,i)=>{
-    const row=i+5;
-    ws2Data.push([
+    ...cats2.map((cat,i)=>[
       cat,
-      {f:"SUMIFS('Journal de caisse'!$F$5:$F$200,'Journal de caisse'!$E$5:$E$200,A"+row+')'},
-      {f:"SUMIFS('Journal de caisse'!$G$5:$G$200,'Journal de caisse'!$E$5:$E$200,A"+row+')'},
-      {f:'B'+row+'-C'+row}
-    ]);
-  });
-  const totalRow=cats.length+5;
-  ws2Data.push(['TOTAL',{f:'SUM(B5:B'+( totalRow-1)+')'},{f:'SUM(C5:C'+(totalRow-1)+')'},{f:'SUM(D5:D'+(totalRow-1)+')'}]);
-
-  const ws2=XLSX.utils.aoa_to_sheet(ws2Data);
-  ws2['!cols']=[{wch:28},{wch:20},{wch:20},{wch:18}];
-  ws2['!merges']=[
-    {s:{r:0,c:0},e:{r:0,c:3}},
-    {s:{r:1,c:0},e:{r:1,c:3}},
+      {f:"SUMIFS('Journal de caisse'!$F$5:$F$200,'Journal de caisse'!$E$5:$E$200,A"+(i+5)+')'},
+      {f:"SUMIFS('Journal de caisse'!$G$5:$G$200,'Journal de caisse'!$E$5:$E$200,A"+(i+5)+')'},
+      {f:'B'+(i+5)+'-C'+(i+5)}
+    ]),
+    ['TOTAL',{f:'SUM(B5:B'+(cats2.length+4)+')'},{f:'SUM(C5:C'+(cats2.length+4)+')'},{f:'SUM(D5:D'+(cats2.length+4)+')'}],
   ];
+  const ws2=XLSX.utils.aoa_to_sheet(rows2);
+  ws2['!cols']=[{wch:28},{wch:20},{wch:20},{wch:18}];
+  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:3}},{s:{r:1,c:0},e:{r:1,c:3}}];
 
   XLSX.utils.book_append_sheet(wb,ws1,'Journal de caisse');
   XLSX.utils.book_append_sheet(wb,ws2,'Résumé');
