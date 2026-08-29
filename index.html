@@ -1678,11 +1678,30 @@ function exportExcel(){
   const totalE=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
   const totalS=t.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
 
+  // ── COULEURS
+  const NAVY='1B3A52',NAVY2='2d4f6e',ORANGE='E8761A',WHITE='FFFFFF';
+  const GREEN='1a8c4e',RED='c0392b',LGRAY='f5f7fa',DGRAY='e8ecf0';
+
+  const styleCell=(ws,ref,opts={})=>{
+    if(!ws[ref])ws[ref]={v:'',t:'s'};
+    ws[ref].s={
+      font:{bold:opts.bold||false,color:{rgb:opts.color||'000000'},sz:opts.sz||10},
+      fill:{fgColor:{rgb:opts.bg||'FFFFFF'},patternType:'solid'},
+      alignment:{horizontal:opts.align||'left',vertical:'center',wrapText:false},
+      border:{
+        top:{style:'thin',color:{rgb:'D0D5DE'}},
+        bottom:{style:'thin',color:{rgb:'D0D5DE'}},
+        left:{style:'thin',color:{rgb:'D0D5DE'}},
+        right:{style:'thin',color:{rgb:'D0D5DE'}},
+      }
+    };
+  };
+
   // ── FEUILLE 1 : Journal de caisse
-  const rows=[
-    ['Journal de caisse — MBENGUE ARCHIBUILDING',null,null,null,null,null,null,null,null,null],
-    ['Suivi des entrées et sorties financières — '+MOIS[curMonth-1]+' '+curYear,null,null,null,null,null,null,null,null,null],
-    [null,null,null,null,null,null,null,null,null,null],
+  const aoa1=[
+    ['Journal de caisse — MBENGUE ARCHIBUILDING','','','','','','','','',''],
+    ['Suivi des entrées et sorties financières — '+MOIS[curMonth-1]+' '+curYear,'','','','','','','','',''],
+    ['','','','','','','','','',''],
     ['Date',"Nature de l'opération",'Client / Fournisseur','Type','Catégorie','Entrée (FCFA)','Sortie (FCFA)','Mode de paiement','N° Facture','Solde (FCFA)'],
     ...t.map((o,i)=>[
       o.date?new Date(o.date+' 00:00:00'):null,
@@ -1696,34 +1715,114 @@ function exportExcel(){
       '',
       {f:'SUM($F$5:F'+(i+5)+')-SUM($G$5:G'+(i+5)+')'}
     ]),
-    [null,null,null,null,'TOTAL',totalE,totalS,null,null,totalE-totalS],
+    ['','','','','TOTAL',totalE,totalS,'','',totalE-totalS],
   ];
-  const ws1=XLSX.utils.aoa_to_sheet(rows);
-  ws1['!cols']=[{wch:12},{wch:42},{wch:24},{wch:10},{wch:22},{wch:14},{wch:14},{wch:16},{wch:16},{wch:14}];
-  ws1['!merges']=[{s:{r:0,c:0},e:{r:0,c:9}},{s:{r:1,c:0},e:{r:1,c:9}}];
 
-  // ── FEUILLE 2 : Résumé avec SUMIFS
+  const ws1=XLSX.utils.aoa_to_sheet(aoa1);
+  ws1['!cols']=[{wch:12},{wch:40},{wch:24},{wch:10},{wch:24},{wch:14},{wch:14},{wch:16},{wch:16},{wch:14}];
+  ws1['!merges']=[
+    {s:{r:0,c:0},e:{r:0,c:9}},
+    {s:{r:1,c:0},e:{r:1,c:9}},
+    {s:{r:2,c:0},e:{r:2,c:9}},
+  ];
+  ws1['!rows']=[{hpt:20},{hpt:15},{hpt:6},{hpt:18}];
+
+  // Styles titre
+  ['A1','B1','C1','D1','E1','F1','G1','H1','I1','J1'].forEach(r=>{
+    styleCell(ws1,r,{bold:true,color:WHITE,bg:NAVY,sz:12,align:'left'});
+  });
+  ['A2','B2','C2','D2','E2','F2','G2','H2','I2','J2'].forEach(r=>{
+    styleCell(ws1,r,{color:'BBCCDD',bg:NAVY2,sz:10});
+  });
+  // En-tête colonnes
+  const hdrs=['A4','B4','C4','D4','E4','F4','G4','H4','I4','J4'];
+  const hdrAligns=['left','left','left','center','left','right','right','center','center','right'];
+  hdrs.forEach((r,i)=>{
+    styleCell(ws1,r,{bold:true,color:WHITE,bg:ORANGE,sz:10,align:hdrAligns[i]});
+  });
+  // Lignes de données
+  t.forEach((_,i)=>{
+    const row=i+5;
+    const isEven=i%2===0;
+    const bg=isEven?LGRAY:WHITE;
+    const o=t[i];
+    const isE=o.type==='entree';
+    const cols=['A','B','C','D','E','F','G','H','I','J'];
+    const aligns=['left','left','left','center','left','right','right','center','center','right'];
+    cols.forEach((c,ci)=>{
+      const ref=c+row;
+      let color='222222';
+      if(c==='F'&&isE)color=GREEN;
+      if(c==='G'&&!isE)color=RED;
+      if(c==='D')color=isE?GREEN:RED;
+      if(c==='J')color=GREEN; // solde positif par défaut
+      styleCell(ws1,ref,{color,bg,sz:10,align:aligns[ci],bold:c==='F'||c==='G'||c==='J'});
+    });
+  });
+  // Ligne total
+  const totalRow=t.length+5;
+  ['A','B','C','D','E','F','G','H','I','J'].forEach((c,ci)=>{
+    const aligns=['left','left','left','center','left','right','right','center','center','right'];
+    const ref=c+totalRow;
+    let color=WHITE;
+    if(c==='F')color='88FFB8';
+    if(c==='G')color='FFAAAA';
+    if(c==='J')color='E8761A';
+    styleCell(ws1,ref,{bold:true,color,bg:NAVY,sz:10,align:aligns[ci]});
+  });
+
+  // ── FEUILLE 2 : Résumé
   const cats2=[
     'Prestations architecturales','Transport et véhicules',
     'Charges exploitation','Prêts et avances accordés',
-    'Déplacements','Remboursements reçus','Autres entrées','Autres sorties'
+    'Déplacements','Remboursements reçus','Autres entrées','Autres sorties',
+    ...customCatsEntree,...customCatsSortie
   ];
-  const rows2=[
-    ['Résumé mensuel par catégorie',null,null,null],
-    ['Se met à jour automatiquement à partir du Journal de caisse',null,null,null],
-    [null,null,null,null],
+  const aoa2=[
+    ['Résumé mensuel par catégorie','','',''],
+    ['Se met à jour automatiquement à partir du Journal de caisse','','',''],
+    ['','','',''],
     ['Catégorie','Total Entrées (FCFA)','Total Sorties (FCFA)','Solde net (FCFA)'],
     ...cats2.map((cat,i)=>[
       cat,
-      {f:"SUMIFS('Journal de caisse'!$F$5:$F$200,'Journal de caisse'!$E$5:$E$200,A"+(i+5)+')'},
-      {f:"SUMIFS('Journal de caisse'!$G$5:$G$200,'Journal de caisse'!$E$5:$E$200,A"+(i+5)+')'},
+      {f:"SUMIFS('Journal de caisse'!$F$5:$F$500,'Journal de caisse'!$E$5:$E$500,A"+(i+5)+')'},
+      {f:"SUMIFS('Journal de caisse'!$G$5:$G$500,'Journal de caisse'!$E$5:$E$500,A"+(i+5)+')'},
       {f:'B'+(i+5)+'-C'+(i+5)}
     ]),
-    ['TOTAL',{f:'SUM(B5:B'+(cats2.length+4)+')'},{f:'SUM(C5:C'+(cats2.length+4)+')'},{f:'SUM(D5:D'+(cats2.length+4)+')'}],
+    ['TOTAL',
+      {f:'SUM(B5:B'+(cats2.length+4)+')'},
+      {f:'SUM(C5:C'+(cats2.length+4)+')'},
+      {f:'SUM(D5:D'+(cats2.length+4)+')'}
+    ],
   ];
-  const ws2=XLSX.utils.aoa_to_sheet(rows2);
-  ws2['!cols']=[{wch:28},{wch:20},{wch:20},{wch:18}];
-  ws2['!merges']=[{s:{r:0,c:0},e:{r:0,c:3}},{s:{r:1,c:0},e:{r:1,c:3}}];
+
+  const ws2=XLSX.utils.aoa_to_sheet(aoa2);
+  ws2['!cols']=[{wch:30},{wch:20},{wch:20},{wch:18}];
+  ws2['!merges']=[
+    {s:{r:0,c:0},e:{r:0,c:3}},
+    {s:{r:1,c:0},e:{r:1,c:3}},
+    {s:{r:2,c:0},e:{r:2,c:3}},
+  ];
+
+  // Styles feuille 2
+  ['A1','B1','C1','D1'].forEach(r=>styleCell(ws2,r,{bold:true,color:WHITE,bg:NAVY,sz:12}));
+  ['A2','B2','C2','D2'].forEach(r=>styleCell(ws2,r,{color:'BBCCDD',bg:NAVY2,sz:9}));
+  ['A4','B4','C4','D4'].forEach((r,i)=>{
+    styleCell(ws2,r,{bold:true,color:WHITE,bg:ORANGE,sz:10,align:i===0?'left':'right'});
+  });
+  cats2.forEach((_,i)=>{
+    const row=i+5;
+    const bg=i%2===0?LGRAY:WHITE;
+    styleCell(ws2,'A'+row,{bg,sz:10});
+    styleCell(ws2,'B'+row,{color:GREEN,bg,sz:10,align:'right',bold:true});
+    styleCell(ws2,'C'+row,{color:RED,bg,sz:10,align:'right',bold:true});
+    styleCell(ws2,'D'+row,{color:GREEN,bg,sz:10,align:'right',bold:true});
+  });
+  const lastRow2=cats2.length+5;
+  styleCell(ws2,'A'+lastRow2,{bold:true,color:WHITE,bg:NAVY,sz:10});
+  styleCell(ws2,'B'+lastRow2,{bold:true,color:'88FFB8',bg:NAVY,sz:10,align:'right'});
+  styleCell(ws2,'C'+lastRow2,{bold:true,color:'FFAAAA',bg:NAVY,sz:10,align:'right'});
+  styleCell(ws2,'D'+lastRow2,{bold:true,color:'E8761A',bg:NAVY,sz:10,align:'right'});
 
   XLSX.utils.book_append_sheet(wb,ws1,'Journal de caisse');
   XLSX.utils.book_append_sheet(wb,ws2,'Résumé');
