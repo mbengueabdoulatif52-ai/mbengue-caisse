@@ -312,10 +312,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:0 14px 4px">
       <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Journal</div>
-      <button onclick="exportExcel()" style="background:var(--navy);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Excel
-      </button>
+      <div style="display:flex;gap:6px">
+        <button onclick="exportJournalPDF()" style="background:var(--orange);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </button>
+        <button onclick="exportExcel()" style="background:var(--navy);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Excel
+        </button>
+      </div>
     </div>
     <div class="filter-tabs" id="journal-tabs">
       <div class="ftab active" onclick="setJournalFilter(this,'all')">Toutes</div>
@@ -1667,6 +1673,215 @@ function renderJournal(){
   const el=document.getElementById('journal-list');
   if(!t.length){el.innerHTML='<div class="empty">Aucune opération</div>';return;}
   el.innerHTML=t.map(o=>opRow(o)).join('');
+}
+
+// ── EXPORT PDF JOURNAL
+function exportJournalPDF(){
+  if(typeof window.jspdf==='undefined'){toast('jsPDF non charge');return;}
+  const{jsPDF}=window.jspdf;
+  const t=opsOfMonth();
+  if(!t.length){toast('Aucune opération ce mois');return;}
+  const totalE=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
+  const totalS=t.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
+  const solde=totalE-totalS;
+
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const W=297,M=12;
+  const NAVY=[27,58,82],ORANGE=[232,118,26],WHITE=[255,255,255];
+  const GREEN=[26,140,78],RED=[192,57,43],LGRAY=[248,250,252];
+  const TEXT=[26,37,64],TEXT2=[100,120,150],BORDER=[224,228,234];
+  const fP=n=>Math.round(Math.abs(n||0)).toLocaleString('fr-FR').replace(/[\u202f\u00a0]/g,' ');
+  const fD=d=>{if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]:d;};
+
+  // ── EN-TETE
+  doc.setFillColor(...NAVY);
+  doc.rect(0,0,W,22,'F');
+  doc.setFillColor(...ORANGE);
+  doc.rect(0,19,W,3,'F');
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.setTextColor(...ORANGE);
+  doc.text('MBENGUE ARCHIBUILDING',M,12);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(200,215,225);
+  doc.text('Releve mensuel — Journal de caisse',M,17);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(...WHITE);
+  doc.text(MOIS[curMonth-1].toUpperCase()+' '+curYear,W-M,12,{align:'right'});
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(180,200,220);
+  doc.text('Genere le '+new Date().toLocaleDateString('fr-FR'),W-M,17,{align:'right'});
+
+  // ── RÉSUMÉ 4 colonnes
+  let y=28;
+  const resumeW=(W-2*M)/4;
+  const resume=[
+    {lbl:'Solde net',val:(solde>=0?'+':'-')+fP(solde)+' F',color:ORANGE},
+    {lbl:'Entrees',val:'+'+fP(totalE)+' F',color:GREEN},
+    {lbl:'Sorties',val:'-'+fP(totalS)+' F',color:RED},
+    {lbl:'Operations',val:String(t.length),color:NAVY},
+  ];
+  resume.forEach((r,i)=>{
+    const x=M+i*resumeW;
+    doc.setFillColor(245,247,252);
+    doc.rect(x,y,resumeW-2,12,'F');
+    doc.setDrawColor(...BORDER);doc.setLineWidth(0.3);
+    doc.rect(x,y,resumeW-2,12);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TEXT2);
+    doc.text(r.lbl,x+3,y+5);
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...r.color);
+    doc.text(r.val,x+3,y+10.5);
+  });
+  y+=18;
+
+  // ── EN-TETE TABLEAU
+  const cols=[
+    {label:'Date',w:18,align:'left'},
+    {label:'Description / Client',w:70,align:'left'},
+    {label:'Categorie',w:42,align:'left'},
+    {label:'Facture',w:28,align:'left'},
+    {label:'Mode',w:18,align:'center'},
+    {label:'Entree (F)',w:28,align:'right'},
+    {label:'Sortie (F)',w:28,align:'right'},
+    {label:'Solde (F)',w:30,align:'right'},
+  ];
+  const totalW=cols.reduce((s,c)=>s+c.w,0);
+  doc.setFillColor(...NAVY);
+  doc.rect(M,y,totalW,7,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...WHITE);
+  let x=M;
+  cols.forEach(c=>{
+    if(c.align==='right')doc.text(c.label,x+c.w-2,y+4.8,{align:'right'});
+    else if(c.align==='center')doc.text(c.label,x+c.w/2,y+4.8,{align:'center'});
+    else doc.text(c.label,x+2,y+4.8);
+    x+=c.w;
+  });
+  y+=8;
+
+  // ── LIGNES DE DONNÉES
+  let solCum=0;
+  t.forEach((o,i)=>{
+    if(y>190){
+      doc.addPage();y=14;
+      // Re-dessiner en-tête
+      doc.setFillColor(...NAVY);
+      doc.rect(M,y,totalW,7,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(...WHITE);
+      let xx=M;
+      cols.forEach(c=>{
+        if(c.align==='right')doc.text(c.label,xx+c.w-2,y+4.8,{align:'right'});
+        else if(c.align==='center')doc.text(c.label,xx+c.w/2,y+4.8,{align:'center'});
+        else doc.text(c.label,xx+2,y+4.8);
+        xx+=c.w;
+      });
+      y+=8;
+    }
+    const isE=o.type==='entree';
+    if(isE)solCum+=o.montant;else solCum-=o.montant;
+    if(i%2===0){doc.setFillColor(...LGRAY);doc.rect(M,y-1,totalW,7,'F');}
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);
+    const rowData=[
+      {val:fD(o.date),align:'left',color:TEXT2},
+      {val:(o.description||'').slice(0,30),align:'left',color:TEXT,bold:true},
+      {val:(o.categorie||'').slice(0,22),align:'left',color:TEXT2},
+      {val:o.numFacture||'',align:'left',color:TEXT2},
+      {val:o.modePaiement||'',align:'center',color:TEXT2},
+      {val:isE?fP(o.montant)+' F':'',align:'right',color:GREEN,bold:true},
+      {val:!isE?fP(o.montant)+' F':'',align:'right',color:RED,bold:true},
+      {val:fP(solCum)+' F',align:'right',color:solCum>=0?GREEN:RED,bold:true},
+    ];
+    let rx=M;
+    rowData.forEach((d,ci)=>{
+      const col=cols[ci];
+      doc.setFont('helvetica',d.bold?'bold':'normal');
+      doc.setTextColor(...(d.color||TEXT));
+      if(d.align==='right')doc.text(d.val,rx+col.w-2,y+4,{align:'right'});
+      else if(d.align==='center')doc.text(d.val,rx+col.w/2,y+4,{align:'center'});
+      else doc.text(d.val.slice(0,col.w/1.8),rx+2,y+4);
+      rx+=col.w;
+    });
+    // Sous-ligne client
+    if(o.client){
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TEXT2);
+      doc.text(o.client.slice(0,30),M+cols[0].w+2,y+7);
+    }
+    y+=(o.client?8:6.5);
+    doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);
+    doc.line(M,y-0.5,M+totalW,y-0.5);
+  });
+
+  // ── LIGNE TOTAL
+  if(y>185){doc.addPage();y=14;}
+  doc.setFillColor(...NAVY);
+  doc.rect(M,y,totalW,7,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(7.5);
+  doc.setTextColor(200,215,225);
+  doc.text('TOTAL',M+2,y+4.8);
+  const totX=M+cols[0].w+cols[1].w+cols[2].w+cols[3].w+cols[4].w;
+  doc.setTextColor(136,255,184);
+  doc.text('+'+fP(totalE)+' F',totX+cols[5].w-2,y+4.8,{align:'right'});
+  doc.setTextColor(255,170,170);
+  doc.text('-'+fP(totalS)+' F',totX+cols[5].w+cols[6].w-2,y+4.8,{align:'right'});
+  doc.setTextColor(...ORANGE);
+  doc.text(fP(solde)+' F',totX+cols[5].w+cols[6].w+cols[7].w-2,y+4.8,{align:'right'});
+  y+=12;
+
+  // ── RÉCAPITULATIF PAR CATÉGORIE
+  if(y>170){doc.addPage();y=14;}
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(...NAVY);
+  doc.text('Recapitulatif par categorie',M,y);
+  y+=5;
+  // En-tête récap
+  const rW=[80,35,35,35];
+  doc.setFillColor(...ORANGE);
+  doc.rect(M,y,rW.reduce((s,w)=>s+w,0),6,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...WHITE);
+  doc.text('Categorie',M+2,y+4);
+  doc.text('Entrees (F)',M+rW[0]+rW[1]-2,y+4,{align:'right'});
+  doc.text('Sorties (F)',M+rW[0]+rW[1]+rW[2]-2,y+4,{align:'right'});
+  doc.text('Solde net (F)',M+rW[0]+rW[1]+rW[2]+rW[3]-2,y+4,{align:'right'});
+  y+=7;
+  // Données récap
+  const cats=[...new Set(t.map(o=>o.categorie).filter(Boolean))];
+  cats.forEach((cat,i)=>{
+    const cE=t.filter(o=>o.type==='entree'&&o.categorie===cat).reduce((s,o)=>s+o.montant,0);
+    const cS=t.filter(o=>o.type==='sortie'&&o.categorie===cat).reduce((s,o)=>s+o.montant,0);
+    const cSol=cE-cS;
+    if(i%2===0){doc.setFillColor(...LGRAY);doc.rect(M,y-1,rW.reduce((s,w)=>s+w,0),6,'F');}
+    doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TEXT);
+    doc.text(cat.slice(0,40),M+2,y+3.5);
+    doc.setTextColor(...GREEN);
+    doc.text(cE?fP(cE)+' F':'--',M+rW[0]+rW[1]-2,y+3.5,{align:'right'});
+    doc.setTextColor(...RED);
+    doc.text(cS?fP(cS)+' F':'--',M+rW[0]+rW[1]+rW[2]-2,y+3.5,{align:'right'});
+    doc.setTextColor(cSol>=0?GREEN:RED);
+    doc.text((cSol>=0?'+':'-')+fP(cSol)+' F',M+rW[0]+rW[1]+rW[2]+rW[3]-2,y+3.5,{align:'right'});
+    y+=6;
+    doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);doc.line(M,y-0.5,M+rW.reduce((s,w)=>s+w,0),y-0.5);
+  });
+  // Total récap
+  doc.setFillColor(...NAVY);
+  doc.rect(M,y,rW.reduce((s,w)=>s+w,0),6,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(7.5);
+  doc.setTextColor(...WHITE);doc.text('TOTAL',M+2,y+4);
+  doc.setTextColor(136,255,184);doc.text(fP(totalE)+' F',M+rW[0]+rW[1]-2,y+4,{align:'right'});
+  doc.setTextColor(255,170,170);doc.text(fP(totalS)+' F',M+rW[0]+rW[1]+rW[2]-2,y+4,{align:'right'});
+  doc.setTextColor(...ORANGE);doc.text(fP(solde)+' F',M+rW[0]+rW[1]+rW[2]+rW[3]-2,y+4,{align:'right'});
+
+  // ── PIED DE PAGE
+  const pages=doc.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...TEXT2);
+    doc.text('MBENGUE ARCHIBUILDING — Journal de caisse',M,208);
+    doc.text('Page '+i+'/'+pages,W-M,208,{align:'right'});
+  }
+
+  doc.save('Journal_MB_'+curYM()+'.pdf');
+  toast('PDF journal telecharge !');
 }
 
 // ── EXPORT EXCEL
