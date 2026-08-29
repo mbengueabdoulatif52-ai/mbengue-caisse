@@ -478,6 +478,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div id="security-section"></div>
       </div>
 
+      <!-- Catégories personnalisées -->
+      <div class="card">
+        <div class="ct">Catégories personnalisées</div>
+        <div id="cats-section"></div>
+      </div>
+
       <!-- À propos -->
       <div class="card" style="margin-bottom:0">
         <div class="ct">À propos</div>
@@ -539,19 +545,50 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 enableIndexedDbPersistence(db).catch(()=>{});
 window._fb={auth,db,doc,addDoc,setDoc,getDoc,updateDoc,deleteDoc,collection,query,orderBy,where,onSnapshot,signOut,GoogleAuthProvider,signInWithPopup,onAuthStateChanged};
+
+// Init auth dans le module — Firebase est garanti prêt ici
+onAuthStateChanged(auth,user=>{
+  document.getElementById('loading').style.display='none';
+  if(user){
+    window._uid=user.uid;
+    if(typeof uid!=='undefined')uid=user.uid;
+    if(typeof hasPin==='function'&&hasPin()){
+      document.getElementById('auth').style.display='none';
+      if(typeof showLockScreen==='function'){
+        window._isLocked=true;
+        showLockScreen(false);
+        window._onPinSuccess=()=>{
+          document.getElementById('app').style.display='flex';
+          if(typeof subscribe==='function'){subscribe();setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);}
+          if(typeof resetLockTimer==='function')resetLockTimer();
+        };
+      }
+    } else {
+      document.getElementById('auth').style.display='none';
+      document.getElementById('app').style.display='flex';
+      if(typeof subscribe==='function'){subscribe();setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);}
+      if(typeof resetLockTimer==='function')resetLockTimer();
+    }
+  } else {
+    window._uid=null;
+    document.getElementById('auth').style.display='flex';
+    document.getElementById('app').style.display='none';
+    if(typeof unsubscribe==='function')unsubscribe();
+  }
+});
 </script>
 
 <script>
 // ── ÉTAT
 let uid=null,ops=[],factures=[],unsub1=null,unsub2=null;
 let curYear=new Date().getFullYear(),curMonth=new Date().getMonth()+1;
-let journalFilter='all',factFilter='all';
+let journalFilter='all',factFilter='all',customCatsEntree=[],customCatsSortie=[];
 let opType='entree',payMode='Wave',avanceOn=false;
 const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
 // ── CATÉGORIES
-const CATS_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées'];
-const CATS_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties'];
+let CATS_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées'];
+let CATS_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties'];
 const CAT_CSS={'Prestations architecturales':'cat-archi','Transport et véhicules':'cat-transport','Prêts et avances accordés':'cat-pret','Charges exploitation':'cat-charge','Remboursements reçus':'cat-remb','Déplacements':'cat-charge','Autres entrées':'cat-autre','Autres sorties':'cat-autre'};
 
 // ── FORMAT
@@ -599,14 +636,19 @@ window.signInGoogle=signInGoogle;
 
 // ── INIT
 document.addEventListener('DOMContentLoaded',()=>{
-  const{auth,onAuthStateChanged}=window._fb;
   // Date du jour
   const today=new Date();
   curYear=today.getFullYear();curMonth=today.getMonth()+1;
   updateMonthLabel();
   document.getElementById('f-date').value=today.toISOString().split('T')[0];
-
   checkOnline();
+  function waitForFb(cb,n=0){
+    if(window._fb)cb();
+    else if(n<50)setTimeout(()=>waitForFb(cb,n+1),100);
+    else console.error('Firebase non charge');
+  }
+  waitForFb(()=>{
+  const{auth,onAuthStateChanged}=window._fb;
   onAuthStateChanged(auth,user=>{
     document.getElementById('loading').style.display='none';
     if(user){
@@ -635,10 +677,11 @@ document.addEventListener('DOMContentLoaded',()=>{
       unsubscribe();
     }
   });
+  }); // waitForFb
 });
 
 function subscribe(){
-  const{db,collection,query,orderBy,onSnapshot}=window._fb;
+  const{db,collection,query,orderBy,onSnapshot,doc,getDoc}=window._fb;
   unsubscribe();
   unsub1=onSnapshot(query(collection(db,'users/'+uid+'/operations'),orderBy('ts','desc')),snap=>{
     ops=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -649,6 +692,17 @@ function subscribe(){
     renderFactures();
     renderDash();
   });
+  // Charger les catégories personnalisées
+  getDoc(doc(db,'users/'+uid+'/data/settings')).then(snap=>{
+    if(snap.exists()){
+      const d=snap.data();
+      customCatsEntree=d.customCatsEntree||[];
+      customCatsSortie=d.customCatsSortie||[];
+      // Mettre à jour les listes
+      CATS_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées',...customCatsEntree];
+      CATS_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties',...customCatsSortie];
+    }
+  }).catch(()=>{});
 }
 function unsubscribe(){if(unsub1)unsub1();if(unsub2)unsub2();}
 function renderCurrent(){
@@ -1733,6 +1787,7 @@ function openClientFiche(client){
 }
 
 function renderProfil(){
+  if(!window._fb)return;
   const{auth}=window._fb;
   const user=auth.currentUser;
   if(user){
@@ -1750,6 +1805,7 @@ function renderProfil(){
     }
   }
   renderSecuritySection();
+  renderCatsSection();
 }
 
 function renderSecuritySection(){
@@ -1795,11 +1851,90 @@ function renderSecuritySection(){
 
 function signOut(){
   if(!confirm('Se déconnecter ?'))return;
+  if(!window._fb)return;
   const{auth,signOut:fbSignOut}=window._fb;
   fbSignOut(auth).then(()=>{
     document.getElementById('app').style.display='none';
     document.getElementById('auth').style.display='flex';
   });
+}
+
+async function saveCustomCats(){
+  if(!window._fb||!uid)return;
+  const{db,doc,setDoc}=window._fb;
+  await setDoc(doc(db,'users/'+uid+'/data/settings'),{
+    customCatsEntree,customCatsSortie
+  },{merge:true});
+  // Mettre à jour les listes globales
+  CATS_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées',...customCatsEntree];
+  CATS_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties',...customCatsSortie];
+}
+
+async function addCustomCat(type){
+  if(!uid){toast('Non connecté');return;}
+  const input=document.getElementById('new-cat-'+type);
+  const val=input.value.trim();
+  if(!val){toast('Nom de catégorie vide');return;}
+  const allCats=[...CATS_ENTREE,...CATS_SORTIE];
+  if(allCats.some(c=>c.toLowerCase()===val.toLowerCase())){
+    toast('Cette catégorie existe déjà');return;
+  }
+  if(type==='entree'){customCatsEntree.push(val);}
+  else{customCatsSortie.push(val);}
+  await saveCustomCats();
+  input.value='';
+  renderCatsSection();
+  toast('Catégorie ajoutée ✓');
+}
+
+async function removeCustomCat(type,cat){
+  if(!uid){toast('Non connecté');return;}
+  // Vérifier si des opérations utilisent cette catégorie
+  const count=ops.filter(o=>o.categorie===cat).length;
+  if(count>0){
+    toast('Impossible — '+count+' opération'+(count>1?'s':'')+' utilisent cette catégorie');
+    return;
+  }
+  if(type==='entree'){customCatsEntree=customCatsEntree.filter(c=>c!==cat);}
+  else{customCatsSortie=customCatsSortie.filter(c=>c!==cat);}
+  await saveCustomCats();
+  renderCatsSection();
+  toast('Catégorie supprimée ✓');
+}
+
+function renderCatsSection(){
+  const el=document.getElementById('cats-section');
+  if(!el||!uid)return;
+  const BASE_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées'];
+  const BASE_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties'];
+
+  const renderList=(cats,base,type)=>cats.map(cat=>{
+    const isBase=base.includes(cat);
+    const count=ops.filter(o=>o.categorie===cat).length;
+    return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:12px;color:var(--text)">${cat}</div>
+        ${count>0?`<div style="font-size:9px;color:var(--text3);background:var(--surf2);padding:2px 6px;border-radius:6px">${count} opération${count>1?'s':''}</div>`:''}
+        ${isBase?`<div style="font-size:9px;color:var(--text3)">par défaut</div>`:''}
+      </div>
+      ${!isBase?`<button onclick="removeCustomCat('${type}','${cat.replace(/'/g,"\'")}')" style="width:24px;height:24px;border-radius:50%;border:0.5px solid var(--border);background:var(--surf2);color:var(--red);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font)">×</button>`:''}
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Entrées</div>
+    ${renderList(CATS_ENTREE,BASE_ENTREE,'entree')}
+    <div style="display:flex;gap:8px;margin-top:10px;margin-bottom:16px">
+      <input id="new-cat-entree" class="finp" type="text" placeholder="Nouvelle catégorie d'entrée" style="flex:1">
+      <button onclick="addCustomCat('entree')" style="padding:10px 16px;border-radius:10px;border:none;background:var(--orange);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">+ Ajouter</button>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Sorties</div>
+    ${renderList(CATS_SORTIE,BASE_SORTIE,'sortie')}
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <input id="new-cat-sortie" class="finp" type="text" placeholder="Nouvelle catégorie de sortie" style="flex:1">
+      <button onclick="addCustomCat('sortie')" style="padding:10px 16px;border-radius:10px;border:none;background:var(--navy);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">+ Ajouter</button>
+    </div>
+  `;
 }
 
 let tt;
