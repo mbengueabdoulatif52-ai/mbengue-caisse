@@ -1742,13 +1742,13 @@ function exportJournalPDF(){
   // ── EN-TETE TABLEAU
   const cols=[
     {label:'Date',w:18,align:'left'},
-    {label:'Description / Client',w:70,align:'left'},
-    {label:'Categorie',w:42,align:'left'},
-    {label:'Facture',w:28,align:'left'},
-    {label:'Mode',w:18,align:'center'},
+    {label:'Description / Client',w:68,align:'left'},
+    {label:'Categorie',w:38,align:'left'},
+    {label:'Facture',w:38,align:'left'},
+    {label:'Mode',w:16,align:'center'},
     {label:'Entree (F)',w:28,align:'right'},
     {label:'Sortie (F)',w:28,align:'right'},
-    {label:'Solde (F)',w:30,align:'right'},
+    {label:'Solde (F)',w:29,align:'right'},
   ];
   const totalW=cols.reduce((s,c)=>s+c.w,0);
   doc.setFillColor(...NAVY);
