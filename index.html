@@ -1797,7 +1797,7 @@ function exportJournalPDF(){
     rowData.forEach((d,ci)=>{
       const col=cols[ci];
       doc.setFont('helvetica',d.bold?'bold':'normal');
-      doc.setTextColor(...(d.color||TEXT));
+      if(d.color)doc.setTextColor(...d.color);else doc.setTextColor(...TEXT);
       if(d.align==='right')doc.text(d.val,rx+col.w-2,y+4,{align:'right'});
       else if(d.align==='center')doc.text(d.val,rx+col.w/2,y+4,{align:'center'});
       else doc.text(d.val.slice(0,col.w/1.8),rx+2,y+4);
@@ -1857,7 +1857,7 @@ function exportJournalPDF(){
     doc.text(cE?fP(cE)+' F':'--',M+rW[0]+rW[1]-2,y+3.5,{align:'right'});
     doc.setTextColor(...RED);
     doc.text(cS?fP(cS)+' F':'--',M+rW[0]+rW[1]+rW[2]-2,y+3.5,{align:'right'});
-    doc.setTextColor(cSol>=0?GREEN:RED);
+    if(cSol>=0)doc.setTextColor(...GREEN);else doc.setTextColor(...RED);
     doc.text((cSol>=0?'+':'-')+fP(cSol)+' F',M+rW[0]+rW[1]+rW[2]+rW[3]-2,y+3.5,{align:'right'});
     y+=6;
     doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);doc.line(M,y-0.5,M+rW.reduce((s,w)=>s+w,0),y-0.5);
