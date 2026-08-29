@@ -1764,7 +1764,7 @@ function exportJournalPDF(){
   // ── LIGNES DE DONNÉES
   let solCum=0;
   t.forEach((o,i)=>{
-    if(y>190){
+    if(y>182){
       doc.addPage();y=14;
       // Re-dessiner en-tête
       doc.setFillColor(...NAVY);
@@ -1806,9 +1806,9 @@ function exportJournalPDF(){
     // Sous-ligne client
     if(o.client){
       doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TEXT2);
-      doc.text(o.client.slice(0,30),M+cols[0].w+2,y+7);
+      doc.text(o.client.slice(0,30),M+cols[0].w+2,y+6.5);
     }
-    y+=(o.client?8:6.5);
+    y+=(o.client?9.5:7);
     doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);
     doc.line(M,y-0.5,M+totalW,y-0.5);
   });
