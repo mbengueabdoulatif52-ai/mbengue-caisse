@@ -1681,7 +1681,7 @@ function renderJournal(){
 function exportJournalPDF(){
   if(typeof window.jspdf==='undefined'){toast('jsPDF non charge');return;}
   const{jsPDF}=window.jspdf;
-  const t=opsOfMonth();
+  const t=opsOfMonth().slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
   if(!t.length){toast('Aucune opération ce mois');return;}
   const totalE=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
   const totalS=t.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
