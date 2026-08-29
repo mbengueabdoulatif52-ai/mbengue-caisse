@@ -883,7 +883,7 @@ async function getNextFactNum(){
 }
 
 async function saveOp(){
-  const{db,collection,addDoc,doc,setDoc}=window._fb;
+  const{db,collection,addDoc,doc,setDoc,updateDoc}=window._fb;
   const amt=parseAmt(document.getElementById('f-amt'));
   const desc=document.getElementById('f-desc').value.trim();
   const client=document.getElementById('f-client').value.trim();
@@ -892,7 +892,7 @@ async function saveOp(){
   const msg=document.getElementById('f-msg');
   if(!amt||!date){msg.textContent='Montant et date obligatoires.';return;}
   msg.textContent='';
-  const data={montant:amt,type:opType,categorie:cat,description:desc,client,date,modePaiement:payMode,ts:new Date().toISOString()};
+  const data={montant:amt,type:opType,categorie:cat,description:desc,client,date,modePaiement:payMode,ts:new Date().toISOString(),numFacture:''};
   try{
     const ref=await addDoc(collection(db,'users/'+uid+'/operations'),data);
     const factMode=document.getElementById('fact-mode')?.value||'none';
@@ -910,6 +910,8 @@ async function saveOp(){
         ts:new Date().toISOString()
       };
       await addDoc(collection(db,'users/'+uid+'/factures'),factData);
+      // Mettre à jour l'opération avec le numéro de facture
+      await updateDoc(doc(db,'users/'+uid+'/operations/'+ref.id),{numFacture:numFact});
       toast('Opération + Facture '+numFact+' créées ✓');
     } else if(opType==='entree'&&factMode==='existing'){
       // Rattacher à une facture existante
