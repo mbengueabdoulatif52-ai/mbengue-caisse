@@ -1787,8 +1787,8 @@ function exportJournalPDF(){
     doc.setFont('helvetica','normal');doc.setFontSize(7.5);
     const rowData=[
       {val:fD(o.date),align:'left',color:TEXT2},
-      {val:(o.description||'').slice(0,30),align:'left',color:TEXT,bold:true},
-      {val:(o.categorie||'').slice(0,22),align:'left',color:TEXT2},
+      {val:(o.description||''),align:'left',color:TEXT,bold:true},
+      {val:(o.categorie||''),align:'left',color:TEXT2},
       {val:o.numFacture||'',align:'left',color:TEXT2},
       {val:o.modePaiement||'',align:'center',color:TEXT2},
       {val:isE?fP(o.montant)+' F':'',align:'right',color:GREEN,bold:true},
@@ -1802,13 +1802,13 @@ function exportJournalPDF(){
       if(d.color)doc.setTextColor(...d.color);else doc.setTextColor(...TEXT);
       if(d.align==='right')doc.text(d.val,rx+col.w-2,y+4,{align:'right'});
       else if(d.align==='center')doc.text(d.val,rx+col.w/2,y+4,{align:'center'});
-      else doc.text(d.val.slice(0,col.w/1.8),rx+2,y+4);
+      else doc.text(d.val,rx+2,y+4);
       rx+=col.w;
     });
     // Sous-ligne client
     if(o.client){
       doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(...TEXT2);
-      doc.text(o.client.slice(0,30),M+cols[0].w+2,y+6.5);
+      doc.text(o.client,M+cols[0].w+2,y+6.5);
     }
     y+=(o.client?9.5:7);
     doc.setDrawColor(...BORDER);doc.setLineWidth(0.2);
@@ -1854,7 +1854,7 @@ function exportJournalPDF(){
     const cSol=cE-cS;
     if(i%2===0){doc.setFillColor(...LGRAY);doc.rect(M,y-1,rW.reduce((s,w)=>s+w,0),6,'F');}
     doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...TEXT);
-    doc.text(cat.slice(0,40),M+2,y+3.5);
+    doc.text(cat,M+2,y+3.5);
     doc.setTextColor(...GREEN);
     doc.text(cE?fP(cE)+' F':'--',M+rW[0]+rW[1]-2,y+3.5,{align:'right'});
     doc.setTextColor(...RED);
