@@ -829,7 +829,7 @@ function initForm(){
   document.getElementById('f-amt').value='';
   document.getElementById('f-desc').value='';
   document.getElementById('f-client').value='';
-  document.getElementById('f-tel').value='';
+  if(document.getElementById('f-tel'))document.getElementById('f-tel').value='';
   document.getElementById('f-total').value='';
   document.getElementById('f-facture-num').value='';
   document.getElementById('f-msg').textContent='';
@@ -897,7 +897,7 @@ async function saveOp(){
   const msg=document.getElementById('f-msg');
   if(!amt||!date){msg.textContent='Montant et date obligatoires.';return;}
   msg.textContent='';
-  const tel=document.getElementById('f-tel').value.trim();
+  const tel=document.getElementById('f-tel')?.value.trim()||'';
   const data={montant:amt,type:opType,categorie:cat,description:desc,client,tel,date,modePaiement:payMode,ts:new Date().toISOString(),numFacture:''};
   try{
     const ref=await addDoc(collection(db,'users/'+uid+'/operations'),data);
@@ -1047,7 +1047,6 @@ async function saveEditOp(id){
       categorie:document.getElementById('e-cat').value,
       description:document.getElementById('e-desc').value.trim(),
       client:document.getElementById('e-client').value.trim(),
-      tel:document.getElementById('e-tel').value.trim(),
       date,
       modePaiement:payMode,
     });
@@ -1567,22 +1566,7 @@ function pinKey(k){
         }
       } else {
         if(pinInput===getPin()){
-          pinInput='';overlay.remove();isLocked=false;
-          if(window._onPinSuccess){
-            window._onPinSuccess();window._onPinSuccess=null;
-          } else {
-            function waitAndLaunchPin(n=0){
-              if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
-              else if(n<100){setTimeout(()=>waitAndLaunchPin(n+1),100);}
-              else{
-                document.getElementById('app').style.display='flex';
-                if(typeof subscribe==='function')subscribe();
-                if(typeof resetLockTimer==='function')resetLockTimer();
-                setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);
-              }
-            }
-            waitAndLaunchPin();
-          }
+          pinInput='';overlay.remove();isLocked=false;resetLockTimer();
         } else {
           document.getElementById('pin-error').textContent='Code incorrect';pinInput='';
           for(let i=0;i<6;i++){const dot=document.getElementById('dot-'+i);if(dot){dot.style.background='transparent';dot.style.borderColor='rgba(255,255,255,.3)';}}
@@ -1635,21 +1619,8 @@ async function tryBiometric(){
       const overlay=document.getElementById('lock-overlay');
       if(overlay){
         overlay.remove();isLocked=false;
-        if(window._onPinSuccess){
-          window._onPinSuccess();window._onPinSuccess=null;
-        } else {
-          function waitAndLaunchBio(n=0){
-            if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
-            else if(n<100){setTimeout(()=>waitAndLaunchBio(n+1),100);}
-            else{
-              document.getElementById('app').style.display='flex';
-              if(typeof subscribe==='function')subscribe();
-              if(typeof resetLockTimer==='function')resetLockTimer();
-              setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);
-            }
-          }
-          waitAndLaunchBio();
-        }
+        if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
+        else{resetLockTimer();}
       }
     }
   }catch(e){
@@ -2171,7 +2142,7 @@ function renderSecuritySection(){
         <div style="font-size:13px;font-weight:500;color:var(--text)">Empreinte digitale</div>
         <div style="font-size:11px;color:var(--text3);margin-top:2px">${hasPasskey?'✓ Activée':'Non configurée'}</div>
       </div>
-      <button onclick="localStorage.removeItem('mbcaisse-passkey');localStorage.removeItem('mbcaisse-passkey-id');registerPasskey().then(ok=>{if(ok){renderSecuritySection();toast('Empreinte enregistrée ✓');}else{toast('Non disponible ou annulé');}})" 
+      <button onclick="registerPasskey().then(ok=>{if(ok){renderSecuritySection();toast('Empreinte enregistrée ✓');}else{toast('Non disponible ou annulé');}})" 
         style="padding:6px 14px;border-radius:8px;border:0.5px solid var(--border);background:var(--surf2);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);${!hasp?'opacity:.4;pointer-events:none':''}"
         ${!hasp?'disabled':''}>
         ${hasPasskey?'Réenregistrer':'Activer'}
