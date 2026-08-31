@@ -1348,15 +1348,15 @@ function genFacturePDF(factId){
 
   // ── TABLEAU PRESTATIONS
   // En-tête — 4 colonnes bien espacées
-  const c1=M,c2=M+95,c3=M+115,c4=M+145;
+  const c1=M,c2=M+98,c3=M+118,c4=M+152;
   doc.setFillColor(...NAVY);
   doc.rect(M,y,W-2*M,8,'F');
   doc.setFont('helvetica','bold');
   doc.setFontSize(8);
   doc.setTextColor(255,255,255);
   doc.text('Description de la prestation',c1+2,y+5.5);
-  doc.text('Qte',c2,y+5.5,{align:'center'});
-  doc.text('Prix unit. (FCFA)',c3+10,y+5.5,{align:'center'});
+  doc.text('Qté',c2+10,y+5.5,{align:'center'});
+  doc.text('Prix unit. (FCFA)',c3+17,y+5.5,{align:'center'});
   doc.text('Montant (FCFA)',W-M-3,y+5.5,{align:'right'});
   y+=9;
 
@@ -1366,15 +1366,15 @@ function genFacturePDF(factId){
   doc.setDrawColor(220,228,234);doc.setLineWidth(0.3);
   doc.rect(M,y,W-2*M,10);
   // Séparateurs verticaux
-  doc.line(c2-4,y,c2-4,y+10);
-  doc.line(c3+6,y,c3+6,y+10);
-  doc.line(c4+10,y,c4+10,y+10);
+  doc.line(c2,y,c2,y+10);
+  doc.line(c3,y,c3,y+10);
+  doc.line(c4,y,c4,y+10);
   doc.setFont('helvetica','normal');
   doc.setFontSize(8.5);
   doc.setTextColor(30,45,70);
   doc.text((f.description||'Prestation').slice(0,45),c1+2,y+6.5);
-  doc.text('1',c2,y+6.5,{align:'center'});
-  doc.text(fP(f.montantTotal),c3+10,y+6.5,{align:'center'});
+  doc.text('1',c2+10,y+6.5,{align:'center'});
+  doc.text(fP(f.montantTotal),c3+17,y+6.5,{align:'center'});
   doc.text(fP(f.montantTotal),W-M-3,y+6.5,{align:'right'});
   y+=11;
 
@@ -1384,9 +1384,9 @@ function genFacturePDF(factId){
     doc.rect(M,y,W-2*M,8,'F');
     doc.setDrawColor(220,228,234);doc.setLineWidth(0.3);
     doc.rect(M,y,W-2*M,8);
-    doc.line(c2-4,y,c2-4,y+8);
-    doc.line(c3+6,y,c3+6,y+8);
-    doc.line(c4+10,y,c4+10,y+8);
+    doc.line(c2,y,c2,y+8);
+    doc.line(c3,y,c3,y+8);
+    doc.line(c4,y,c4,y+8);
     y+=8;
   }
   y+=5;
