@@ -910,7 +910,7 @@ async function saveOp(){
       const type_paiem=amt>=total?'complet':'avance';
       const statut=amt>=total?'paid':'partial';
       const factData={
-        montantTotal:total,client,description:desc,categorie:cat,
+        montantTotal:total,client,tel,description:desc,categorie:cat,
         dateEmission:date,numFacture:numFact,statut,
         paiements:[{montant:amt,date,mode:payMode,type:type_paiem,opId:ref.id}],
         ts:new Date().toISOString()
