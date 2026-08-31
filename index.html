@@ -368,6 +368,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <input class="finp" id="f-client" type="text" placeholder="Ex: Talla DIOP">
       </div>
       <div class="fgrp">
+        <div class="flbl">Téléphone client (optionnel)</div>
+        <input class="finp" id="f-tel" type="tel" placeholder="Ex: +221 77 123 45 67">
+      </div>
+      <div class="fgrp">
         <div class="flbl">Date</div>
         <input class="finp" id="f-date" type="date">
       </div>
@@ -825,6 +829,7 @@ function initForm(){
   document.getElementById('f-amt').value='';
   document.getElementById('f-desc').value='';
   document.getElementById('f-client').value='';
+  document.getElementById('f-tel').value='';
   document.getElementById('f-total').value='';
   document.getElementById('f-facture-num').value='';
   document.getElementById('f-msg').textContent='';
@@ -892,7 +897,8 @@ async function saveOp(){
   const msg=document.getElementById('f-msg');
   if(!amt||!date){msg.textContent='Montant et date obligatoires.';return;}
   msg.textContent='';
-  const data={montant:amt,type:opType,categorie:cat,description:desc,client,date,modePaiement:payMode,ts:new Date().toISOString(),numFacture:''};
+  const tel=document.getElementById('f-tel').value.trim();
+  const data={montant:amt,type:opType,categorie:cat,description:desc,client,tel,date,modePaiement:payMode,ts:new Date().toISOString(),numFacture:''};
   try{
     const ref=await addDoc(collection(db,'users/'+uid+'/operations'),data);
     const factMode=document.getElementById('fact-mode')?.value||'none';
@@ -1041,6 +1047,7 @@ async function saveEditOp(id){
       categorie:document.getElementById('e-cat').value,
       description:document.getElementById('e-desc').value.trim(),
       client:document.getElementById('e-client').value.trim(),
+      tel:document.getElementById('e-tel').value.trim(),
       date,
       modePaiement:payMode,
     });
@@ -1298,7 +1305,7 @@ function genFacturePDF(factId){
   doc.text('Conception et dimensionnement de batiments',W/2,17,{align:'center'});
   doc.text('Abdou Latif Mbengue — Ingenieur en genie civil',W/2,21,{align:'center'});
   doc.text('Dakar, Senegal',W/2,25,{align:'center'});
-  doc.text('NINEA : [a completer]',W/2,29,{align:'center'});
+  doc.text('Tél : +221 70 562 32 06',W/2,29,{align:'center'});
 
   // FACTURE (droite)
   doc.setFillColor(...NAVY);
@@ -1331,11 +1338,12 @@ function genFacturePDF(factId){
   doc.setFont('helvetica','bold');
   doc.setFontSize(12);
   doc.setTextColor(...NAVY);
-  doc.text(f.client||'Client',M+5,y+14);
+  doc.text(f.client||'Client',M+5,y+13);
   doc.setFont('helvetica','normal');
   doc.setFontSize(8);
   doc.setTextColor(80,100,120);
-  doc.text('Dakar, Senegal',M+5,y+20);
+  doc.text('Dakar, Senegal',M+5,y+19);
+  if(f.tel){doc.text('Tél : '+f.tel,M+5,y+24);y+=6;}
   y+=30;
 
   // ── TABLEAU PRESTATIONS
