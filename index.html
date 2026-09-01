@@ -657,8 +657,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('f-date').value=today.toISOString().split('T')[0];
   checkOnline();
 });
-  }); // waitForFb
-});
 
 function subscribe(){
   const{db,collection,query,orderBy,onSnapshot,doc,getDoc}=window._fb;
