@@ -1566,7 +1566,22 @@ function pinKey(k){
         }
       } else {
         if(pinInput===getPin()){
-          pinInput='';overlay.remove();isLocked=false;resetLockTimer();
+          pinInput='';overlay.remove();isLocked=false;
+          if(window._onPinSuccess){
+            window._onPinSuccess();window._onPinSuccess=null;
+          } else {
+            function waitAndLaunchPin(n=0){
+              if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
+              else if(n<100){setTimeout(()=>waitAndLaunchPin(n+1),100);}
+              else{
+                document.getElementById('app').style.display='flex';
+                if(typeof subscribe==='function')subscribe();
+                if(typeof resetLockTimer==='function')resetLockTimer();
+                setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);
+              }
+            }
+            waitAndLaunchPin();
+          }
         } else {
           document.getElementById('pin-error').textContent='Code incorrect';pinInput='';
           for(let i=0;i<6;i++){const dot=document.getElementById('dot-'+i);if(dot){dot.style.background='transparent';dot.style.borderColor='rgba(255,255,255,.3)';}}
@@ -1619,8 +1634,21 @@ async function tryBiometric(){
       const overlay=document.getElementById('lock-overlay');
       if(overlay){
         overlay.remove();isLocked=false;
-        if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
-        else{resetLockTimer();}
+        if(window._onPinSuccess){
+          window._onPinSuccess();window._onPinSuccess=null;
+        } else {
+          function waitAndLaunchBio(n=0){
+            if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
+            else if(n<100){setTimeout(()=>waitAndLaunchBio(n+1),100);}
+            else{
+              document.getElementById('app').style.display='flex';
+              if(typeof subscribe==='function')subscribe();
+              if(typeof resetLockTimer==='function')resetLockTimer();
+              setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);
+            }
+          }
+          waitAndLaunchBio();
+        }
       }
     }
   }catch(e){
