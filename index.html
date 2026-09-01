@@ -311,7 +311,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding:0 14px 4px">
-      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Journal</div>
+      <div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Journal</div>
+        <div id="journal-period-label" style="font-size:9px;color:var(--orange);margin-top:1px"></div>
+      </div>
       <div style="display:flex;gap:6px">
         <button onclick="exportJournalPDF()" style="background:var(--orange);border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;color:#fff;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:5px">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -327,6 +330,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <div class="ftab active" onclick="setJournalFilter(this,'all')">Toutes</div>
       <div class="ftab" onclick="setJournalFilter(this,'entree')">Entrées</div>
       <div class="ftab" onclick="setJournalFilter(this,'sortie')">Sorties</div>
+      <div class="ftab" onclick="setJournalFilter(this,'alltime')" style="border-color:var(--orange);color:var(--orange)">Tout afficher</div>
     </div>
     <div id="journal-list"></div>
   </div>
@@ -568,6 +572,7 @@ onAuthStateChanged(auth,user=>{
         window._isLocked=true;
         showLockScreen(false);
         window._onPinSuccess=()=>{
+          if(window._uid)uid=window._uid;
           document.getElementById('app').style.display='flex';
           if(typeof subscribe==='function'){subscribe();setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);}
           if(typeof resetLockTimer==='function')resetLockTimer();
@@ -646,47 +651,12 @@ window.signInGoogle=signInGoogle;
 
 // ── INIT
 document.addEventListener('DOMContentLoaded',()=>{
-  // Date du jour
   const today=new Date();
   curYear=today.getFullYear();curMonth=today.getMonth()+1;
   updateMonthLabel();
   document.getElementById('f-date').value=today.toISOString().split('T')[0];
   checkOnline();
-  function waitForFb(cb,n=0){
-    if(window._fb)cb();
-    else if(n<50)setTimeout(()=>waitForFb(cb,n+1),100);
-    else console.error('Firebase non charge');
-  }
-  waitForFb(()=>{
-  const{auth,onAuthStateChanged}=window._fb;
-  onAuthStateChanged(auth,user=>{
-    document.getElementById('loading').style.display='none';
-    if(user){
-      uid=user.uid;
-      // Vérifier PIN avant d'afficher l'app
-      if(hasPin()){
-        document.getElementById('auth').style.display='none';
-        isLocked=true;
-        showLockScreen(false);
-        // Quand le PIN est validé, montrer l'app
-        window._onPinSuccess=()=>{
-          document.getElementById('app').style.display='flex';
-          subscribe();
-          resetLockTimer();
-        };
-      } else {
-        document.getElementById('auth').style.display='none';
-        document.getElementById('app').style.display='flex';
-        subscribe();
-        resetLockTimer();
-        setTimeout(renderProfil,500);
-      }
-    } else {
-      document.getElementById('auth').style.display='flex';
-      document.getElementById('app').style.display='none';
-      unsubscribe();
-    }
-  });
+});
   }); // waitForFb
 });
 
@@ -720,6 +690,9 @@ function renderCurrent(){
   if(p==='dash')renderDash();
   else if(p==='journal')renderJournal();
   else if(p==='stats')renderStats();
+  // Mettre à jour label période
+  const title=document.getElementById('journal-period-label');
+  if(title&&journalFilter!=='alltime')title.textContent=MOIS[curMonth-1]+' '+curYear;
 }
 
 // ── MOIS
@@ -769,11 +742,12 @@ function opsOfMonth(){
 
 // ── DASHBOARD
 function renderDash(){
-  const t=opsOfMonth();
-  const entrees=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
-  const sorties=t.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
+  // Dashboard — toutes les opérations sans filtre mois
+  const allOps=ops; // toutes
+  const entrees=allOps.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
+  const sorties=allOps.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
   const solde=entrees-sorties;
-  const nbFact=factures.filter(f=>{const d=f.dateEmission||'';return d.startsWith(curYM());}).length;
+  const nbFact=factures.length;
   const creances=factures.reduce((s,f)=>{
     const enc=f.paiements?f.paiements.reduce((a,p)=>a+p.montant,0):0;
     return s+(f.montantTotal-enc);
@@ -784,10 +758,10 @@ function renderDash(){
   document.getElementById('dash-sorties').textContent=fmt(sorties)+' F';
   document.getElementById('dash-factures').textContent=nbFact;
   document.getElementById('dash-creances').textContent=fmt(creances)+' F';
-  // Dernières opérations
+  // Dernières opérations — 8 plus récentes toutes périodes
   const el=document.getElementById('dash-ops');
-  const recent=t.slice(0,8);
-  if(!recent.length){el.innerHTML='<div class="empty">Aucune opération ce mois</div>';return;}
+  const recent=allOps.slice(0,8);
+  if(!recent.length){el.innerHTML='<div class="empty">Aucune opération</div>';return;}
   el.innerHTML=recent.map(o=>opRow(o)).join('');
 }
 
@@ -820,6 +794,9 @@ function renderJournal(){
 function setJournalFilter(el,f){
   document.querySelectorAll('#journal-tabs .ftab').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');journalFilter=f;renderJournal();
+  // Indicateur visuel si on affiche tout
+  const title=document.getElementById('journal-period-label');
+  if(title)title.textContent=f==='alltime'?'Toutes les périodes':MOIS[curMonth-1]+' '+curYear;
 }
 window.setJournalFilter=setJournalFilter;
 
@@ -1574,6 +1551,7 @@ function pinKey(k){
               if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
               else if(n<100){setTimeout(()=>waitAndLaunchPin(n+1),100);}
               else{
+                if(window._uid)uid=window._uid;
                 document.getElementById('app').style.display='flex';
                 if(typeof subscribe==='function')subscribe();
                 if(typeof resetLockTimer==='function')resetLockTimer();
@@ -1641,6 +1619,7 @@ async function tryBiometric(){
             if(window._onPinSuccess){window._onPinSuccess();window._onPinSuccess=null;}
             else if(n<100){setTimeout(()=>waitAndLaunchBio(n+1),100);}
             else{
+              if(window._uid)uid=window._uid;
               document.getElementById('app').style.display='flex';
               if(typeof subscribe==='function')subscribe();
               if(typeof resetLockTimer==='function')resetLockTimer();
@@ -1684,8 +1663,10 @@ window.addEventListener('offline',checkOnline);
 
 // ── RECHERCHE JOURNAL
 function renderJournal(){
-  let t=opsOfMonth();
-  if(journalFilter!=='all')t=t.filter(o=>o.type===journalFilter);
+  // Si 'alltime' toutes les ops, sinon filtre mois
+  let t=journalFilter==='alltime'?[...ops]:opsOfMonth();
+  if(journalFilter==='entree')t=t.filter(o=>o.type==='entree');
+  else if(journalFilter==='sortie')t=t.filter(o=>o.type==='sortie');
   const q=(document.getElementById('journal-search')?.value||'').toLowerCase().trim();
   if(q){
     t=t.filter(o=>
