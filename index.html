@@ -141,7 +141,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .fact-num{font-size:12px;font-weight:700;color:var(--text)}
 .fact-date{font-size:10px;color:var(--text3);margin-top:2px}
 .fact-client{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
-.fact-desc{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fact-desc{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px}
+.fact-lignes{display:flex;flex-direction:column;gap:4px;margin-top:6px;margin-bottom:4px}
+.fact-ligne{display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--surf2);border-radius:8px;border:0.5px solid var(--border)}
+.fact-ligne-info{flex:1;min-width:0}
+.fact-ligne-desc{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fact-ligne-cat{font-size:9px;color:var(--orange);margin-top:1px;font-weight:600}
+.fact-ligne-amt{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--text2);flex-shrink:0}
 .badge{font-size:9px;font-weight:700;padding:3px 9px;border-radius:8px}
 .badge-partial{background:#fff8e0;color:#b8860b}
 .badge-paid{background:#f0fdf4;color:#1a8c4e}
@@ -358,8 +364,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         </button>
       </div>
 
-      <!-- ── CHAMPS COMMUNS ── -->
-      <div class="fgrp">
+      <!-- Catégorie : visible seulement en mode Sortie -->
+      <div class="fgrp" id="f-cat-grp" style="display:none">
         <div class="flbl">Catégorie</div>
         <select class="fsel" id="f-cat" onchange="updateCatColor()"></select>
       </div>
@@ -384,12 +390,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <span style="flex:1;height:1px;background:rgba(232,118,26,.2);display:block"></span>
         </div>
         <div class="fgrp">
-          <div style="display:grid;grid-template-columns:1fr 52px 80px 32px;gap:4px;margin-bottom:4px">
-            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase">Description</div>
-            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:center">Qté</div>
-            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:right">Prix unit.</div>
-            <div></div>
-          </div>
           <div id="lignes-list"></div>
           <button type="button" onclick="addLigne()" style="width:100%;padding:8px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;margin-top:4px">+ Ajouter une ligne</button>
           <div id="lignes-total" style="margin-top:8px;padding:10px 12px;background:var(--surf2);border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center">
@@ -624,8 +624,8 @@ let opType='entree',payMode='Wave',avanceOn=false;
 const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
 // ── CATÉGORIES
-let CATS_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées'];
-let CATS_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties'];
+let CATS_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes'];
+let CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges'];
 const CAT_CSS={'Prestations architecturales':'cat-archi','Transport et véhicules':'cat-transport','Prêts et avances accordés':'cat-pret','Charges exploitation':'cat-charge','Remboursements reçus':'cat-remb','Déplacements':'cat-charge','Autres entrées':'cat-autre','Autres sorties':'cat-autre'};
 
 // ── FORMAT
@@ -699,8 +699,8 @@ function subscribe(){
       customCatsEntree=d.customCatsEntree||[];
       customCatsSortie=d.customCatsSortie||[];
       // Mettre à jour les listes
-      CATS_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées',...customCatsEntree];
-      CATS_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties',...customCatsSortie];
+      CATS_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes',...customCatsEntree];
+      CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges',...customCatsSortie];
     }
   }).catch(()=>{});
 }
@@ -845,6 +845,8 @@ function setType(t){
   const sortieSection=document.getElementById('sortie-section');
   if(entreeSection)entreeSection.style.display=t==='entree'?'flex':'none';
   if(sortieSection)sortieSection.style.display=t==='sortie'?'flex':'none';
+  const catGrp=document.getElementById('f-cat-grp');
+  if(catGrp)catGrp.style.display=t==='sortie'?'block':'none';
   const saveLabel=document.getElementById('btn-save-label');
   if(saveLabel)saveLabel.textContent=t==='entree'?'📄 Créer la facture':'✓ Enregistrer la sortie';
   if(t==='entree'&&document.getElementById('lignes-list')?.children.length===0)initLignes();
@@ -861,17 +863,36 @@ function setPay(el,mode){
 }
 function updateCatColor(){}
 // ── LIGNES DE PRESTATIONS
-function addLigne(desc='',qte=1,prix=''){
+function addLigne(desc='',qte=1,prix='',cat=''){
   const container=document.getElementById('lignes-list');
-  const idx=container.children.length;
+  const catOpts=CATS_ENTREE.map(c=>`<option value="${c}"${c===cat?' selected':''}>${c}</option>`).join('');
   const div=document.createElement('div');
   div.className='ligne-row';
-  div.style.cssText='display:grid;grid-template-columns:1fr 52px 80px 32px;gap:4px;margin-bottom:4px;align-items:center';
+  div.style.cssText='background:var(--surf2);border-radius:10px;border:1.5px solid var(--border);padding:10px;display:flex;flex-direction:column;gap:8px;margin-bottom:8px';
   div.innerHTML=`
-    <input class="finp ligne-desc" type="text" placeholder="Description…" value="${desc}" oninput="calcLignesTotal()" style="font-size:12px;padding:6px 8px">
-    <input class="finp ligne-qte" type="number" min="1" value="${qte}" oninput="calcLignesTotal()" style="font-size:12px;padding:6px 8px;text-align:center">
-    <input class="finp ligne-prix" type="text" placeholder="0" value="${prix}" inputmode="numeric" oninput="fmtAmt(this);calcLignesTotal()" style="font-size:12px;padding:6px 8px;text-align:right">
-    <button type="button" onclick="this.closest('.ligne-row').remove();calcLignesTotal()" style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(220,38,38,.3);background:rgba(220,38,38,.08);color:var(--red);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+    <div style="display:grid;grid-template-columns:1fr 36px;gap:8px;align-items:start">
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Description</div>
+        <input class="finp ligne-desc" type="text" placeholder="Description de la prestation…" value="${desc}" oninput="calcLignesTotal()" style="font-size:12px;padding:8px 10px">
+      </div>
+      <button type="button" onclick="this.closest('.ligne-row').remove();calcLignesTotal()" style="width:36px;height:36px;border-radius:8px;border:1.5px solid rgba(220,38,38,.3);background:rgba(220,38,38,.08);color:var(--red);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:20px">×</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Catégorie</div>
+        <select class="fsel ligne-cat" style="font-size:11px;padding:8px 10px">${catOpts}</select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Qté</div>
+          <input class="finp ligne-qte" type="number" min="1" value="${qte}" oninput="calcLignesTotal()" style="font-size:12px;padding:8px;text-align:center">
+        </div>
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Prix unit.</div>
+          <input class="finp ligne-prix" type="text" placeholder="0" value="${prix}" inputmode="numeric" oninput="fmtAmt(this);calcLignesTotal()" style="font-size:12px;padding:8px;text-align:right">
+        </div>
+      </div>
+    </div>
   `;
   container.appendChild(div);
   calcLignesTotal();
@@ -893,7 +914,8 @@ function getLignes(){
   return Array.from(rows).map(r=>({
     description:r.querySelector('.ligne-desc').value.trim(),
     qte:parseFloat(r.querySelector('.ligne-qte').value)||1,
-    prixUnit:parseAmt(r.querySelector('.ligne-prix'))||0
+    prixUnit:parseAmt(r.querySelector('.ligne-prix'))||0,
+    categorie:r.querySelector('.ligne-cat')?.value||CATS_ENTREE[0]
   })).filter(l=>l.description||l.prixUnit>0);
 }
 function initLignes(){
@@ -1135,7 +1157,15 @@ function factCard(f){
       <span class="badge ${badges[statut]}">${labels[statut]}</span>
     </div>
     <div class="fact-client">${f.client||'—'}</div>
-    <div class="fact-desc">${f.description||'—'}</div>
+    ${f.description?`<div class="fact-desc">${f.description}</div>`:''}
+    ${(f.lignes&&f.lignes.length>0)?`<div class="fact-lignes">${f.lignes.map(l=>`
+      <div class="fact-ligne">
+        <div class="fact-ligne-info">
+          <div class="fact-ligne-desc">${l.description||'—'}</div>
+          <div class="fact-ligne-cat">${l.categorie||''}</div>
+        </div>
+        <div class="fact-ligne-amt">${l.qte>1?l.qte+'×':''} ${fmt((l.qte||1)*(l.prixUnit||0))} F</div>
+      </div>`).join('')}</div>`:''}
     <div class="fact-amounts">
       <div class="amount-row"><span class="amount-lbl">Total facture</span><span class="amount-val">${fmt(f.montantTotal)} F</span></div>
       <div class="amount-row"><span class="amount-lbl" style="color:var(--green)">Encaissé</span><span class="amount-val" style="color:var(--green)">${fmt(enc)} F</span></div>
@@ -1252,9 +1282,32 @@ function renderStats(){
       </div>
       <div style="font-size:10px;color:var(--text3);text-align:center">Total ${curYear} : <b style="color:var(--orange)">${fmt(ca)} F</b></div>`;
   }
-  // Par catégorie
+  // Par catégorie — depuis les lignes de prestations des factures + entrées simples
   const byCat={};
-  entrees.forEach(o=>{byCat[o.categorie]=(byCat[o.categorie]||0)+o.montant;});
+  // Période filtrée : récupère les factures dont la date d'émission est dans la période
+  const periodStart=statsMode==='annee'?String(curYear)+'-01-01':ym(curYear,curMonth)+'-01';
+  const periodEnd=statsMode==='annee'?String(curYear)+'-12-31':ym(curYear,curMonth)+'-31';
+  factures.forEach(f=>{
+    if(!f.dateEmission||f.dateEmission<periodStart||f.dateEmission>periodEnd)return;
+    const lignes=f.lignes||[];
+    if(lignes.length>0){
+      lignes.forEach(l=>{
+        const cat=l.categorie||'Études architecturales';
+        const val=(l.qte||1)*(l.prixUnit||0);
+        byCat[cat]=(byCat[cat]||0)+val;
+      });
+    } else {
+      // Ancienne facture sans lignes détaillées — utilise catégorie globale
+      const cat=f.categorie||'Études architecturales';
+      byCat[cat]=(byCat[cat]||0)+(f.montantTotal||0);
+    }
+  });
+  // Entrées simples sans facture (montant direct, pas via lignes)
+  entrees.filter(o=>!o.numFacture||o.montant>0).forEach(o=>{
+    if(o.numFacture)return; // déjà compté via factures.lignes
+    const cat=o.categorie||'Autres recettes';
+    byCat[cat]=(byCat[cat]||0)+o.montant;
+  });
   const maxCat=Math.max(...Object.values(byCat),1);
   document.getElementById('stats-cats').innerHTML=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).map(([cat,val])=>`
     <div class="bar-row">
@@ -2240,8 +2293,8 @@ async function saveCustomCats(){
     customCatsEntree,customCatsSortie
   },{merge:true});
   // Mettre à jour les listes globales
-  CATS_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées',...customCatsEntree];
-  CATS_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties',...customCatsSortie];
+  CATS_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes',...customCatsEntree];
+  CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges',...customCatsSortie];
 }
 
 async function addCustomCat(type){
@@ -2279,8 +2332,8 @@ async function removeCustomCat(type,cat){
 function renderCatsSection(){
   const el=document.getElementById('cats-section');
   if(!el||!uid)return;
-  const BASE_ENTREE=['Prestations architecturales','Transport et véhicules','Remboursements reçus','Autres entrées'];
-  const BASE_SORTIE=['Charges exploitation','Prêts et avances accordés','Déplacements','Autres sorties'];
+  const BASE_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes'];
+  const BASE_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges'];
 
   const renderList=(cats,base,type)=>cats.map(cat=>{
     const isBase=base.includes(cat);
