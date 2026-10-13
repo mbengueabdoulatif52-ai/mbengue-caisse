@@ -167,7 +167,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .act-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
 .act-btn.act-enc{background:var(--orange);border-color:var(--orange);color:#fff;font-size:11px}
 .act-btn.act-enc.disabled{background:var(--surf2);border-color:var(--border);color:var(--text3);cursor:default}
-.act-btn.act-del{flex:0 0 36px;background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.3);color:var(--red)}
+.act-btn.act-del{flex:1;background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.3);color:var(--red)}
 .filter-tabs{display:flex;gap:6px;padding:12px 14px 6px;overflow-x:auto}
 .filter-tabs::-webkit-scrollbar{display:none}
 .ftab{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid var(--border);background:var(--surf);color:var(--text3);cursor:pointer;white-space:nowrap;font-family:var(--font);transition:.15s}
@@ -357,11 +357,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           Sortie
         </button>
       </div>
-      <div class="fgrp">
-        <div class="flbl">Montant (FCFA)</div>
-        <input class="finp" id="f-amt" type="text" placeholder="Ex: 125 000" inputmode="numeric" oninput="fmtAmt(this)">
-        <div class="fmsg" id="f-msg"></div>
-      </div>
+
+      <!-- ── CHAMPS COMMUNS ── -->
       <div class="fgrp">
         <div class="flbl">Catégorie</div>
         <select class="fsel" id="f-cat" onchange="updateCatColor()"></select>
@@ -370,65 +367,76 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         <div class="flbl">Description</div>
         <input class="finp" id="f-desc" type="text" placeholder="Ex: Plan béton armé villa R+1 — M. Diallo">
       </div>
-      <div class="fgrp">
-        <div class="flbl">Client / Fournisseur</div>
-        <input class="finp" id="f-client" type="text" placeholder="Ex: Talla DIOP">
-      </div>
-      <div class="fgrp">
-        <div class="flbl">Téléphone client (optionnel)</div>
-        <input class="finp" id="f-tel" type="tel" placeholder="Ex: +221 77 123 45 67">
-      </div>
-      <div class="fgrp">
-        <div class="flbl">Date</div>
-        <input class="finp" id="f-date" type="date">
-      </div>
-      <div class="fgrp">
-        <div class="flbl">Mode de paiement</div>
-        <div class="pay-grid">
-          <div class="pay-btn active" onclick="setPay(this,'Wave')">Wave</div>
-          <div class="pay-btn" onclick="setPay(this,'Espèces')">Espèces</div>
-          <div class="pay-btn" onclick="setPay(this,'Virement')">Virement</div>
-        </div>
-      </div>
-      <!-- Facture -->
-      <div class="fgrp" id="avance-section" style="display:none">
-        <div class="divider"></div>
+
+      <!-- ── SECTION ENTRÉE : Client + Lignes de prestations ── -->
+      <div id="entree-section" style="display:flex;flex-direction:column;gap:14px">
         <div class="fgrp">
-          <div class="flbl">Facture</div>
-          <select class="fsel" id="fact-mode" onchange="onFactModeChange()">
-            <option value="none">Sans facture</option>
-            <option value="new">Créer une nouvelle facture</option>
-            <option value="existing">Rattacher à une facture existante</option>
-          </select>
+          <div class="flbl">Client</div>
+          <input class="finp" id="f-client" type="text" placeholder="Ex: Talla DIOP">
         </div>
-        <div id="fact-new-fields" style="display:none">
-          <div class="fgrp">
-            <div class="flbl" style="margin-bottom:6px">Lignes de prestations</div>
-            <div style="display:grid;grid-template-columns:1fr 52px 80px 32px;gap:4px;margin-bottom:4px">
-              <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase">Description</div>
-              <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:center">Qté</div>
-              <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:right">Prix unit.</div>
-              <div></div>
-            </div>
-            <div id="lignes-list"></div>
-            <button type="button" onclick="addLigne()" style="width:100%;padding:8px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;margin-top:4px">+ Ajouter une ligne</button>
-            <div id="lignes-total" style="display:none;margin-top:8px;padding:10px 12px;background:var(--surf2);border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center">
-              <span style="color:var(--text2)">TOTAL</span>
-              <span id="lignes-total-val" style="color:var(--orange);font-variant-numeric:tabular-nums">0 F</span>
-            </div>
+        <div class="fgrp">
+          <div class="flbl">Téléphone client (optionnel)</div>
+          <input class="finp" id="f-tel" type="tel" placeholder="Ex: +221 77 123 45 67">
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);display:flex;align-items:center;gap:8px">
+          📄 Nouvelle facture
+          <span style="flex:1;height:1px;background:rgba(232,118,26,.2);display:block"></span>
+        </div>
+        <div class="fgrp">
+          <div style="display:grid;grid-template-columns:1fr 52px 80px 32px;gap:4px;margin-bottom:4px">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase">Description</div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:center">Qté</div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:right">Prix unit.</div>
+            <div></div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:8px">Le numéro de facture sera généré automatiquement</div>
+          <div id="lignes-list"></div>
+          <button type="button" onclick="addLigne()" style="width:100%;padding:8px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;margin-top:4px">+ Ajouter une ligne</button>
+          <div id="lignes-total" style="margin-top:8px;padding:10px 12px;background:var(--surf2);border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center">
+            <span style="color:var(--text2)">TOTAL FACTURE</span>
+            <span id="lignes-total-val" style="color:var(--orange);font-variant-numeric:tabular-nums">0 F</span>
+          </div>
         </div>
-        <div id="fact-existing-fields" style="display:none">
-          <div class="fgrp">
-            <div class="flbl">Sélectionner la facture</div>
-            <select class="fsel" id="f-fact-select"></select>
+        <div class="fgrp">
+          <div class="flbl">Date d'émission</div>
+          <input class="finp" id="f-date" type="date">
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(27,58,82,.06);border-radius:10px;border:1px solid rgba(27,58,82,.12)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="font-size:11px;color:var(--text2);line-height:1.5">La facture sera créée sans paiement initial. Utilisez le bouton <b style="color:var(--orange)">💰 Encaisser</b> sur la carte pour enregistrer les paiements.</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">Le numéro de facture sera généré automatiquement.</div>
+      </div>
+
+      <!-- ── SECTION SORTIE : Montant + Date + Mode paiement ── -->
+      <div id="sortie-section" style="display:none;flex-direction:column;gap:14px">
+        <div class="fgrp">
+          <div class="flbl">Fournisseur (optionnel)</div>
+          <input class="finp" id="f-client-sortie" type="text" placeholder="Ex: Papeterie Sandaga">
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Montant (FCFA)</div>
+          <input class="finp" id="f-amt" type="text" placeholder="Ex: 15 000" inputmode="numeric" oninput="fmtAmt(this)">
+          <div class="fmsg" id="f-msg"></div>
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Date</div>
+          <input class="finp" id="f-date-sortie" type="date">
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Mode de paiement</div>
+          <div class="pay-grid">
+            <div class="pay-btn active" onclick="setPay(this,'Wave')">Wave</div>
+            <div class="pay-btn" onclick="setPay(this,'Espèces')">Espèces</div>
+            <div class="pay-btn" onclick="setPay(this,'Virement')">Virement</div>
           </div>
         </div>
       </div>
-      <button class="btn-save" onclick="saveOp()">
+
+      <div class="fmsg" id="f-msg-entree"></div>
+      <button class="btn-save" onclick="saveOp()" id="btn-save-op">
         <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-        Enregistrer l'opération
+        <span id="btn-save-label">📄 Créer la facture</span>
       </button>
     </div>
   </div>
@@ -815,27 +823,31 @@ window.setJournalFilter=setJournalFilter;
 // ── FORMULAIRE
 function initForm(){
   setType('entree');
-  document.getElementById('f-amt').value='';
+  const today=new Date().toISOString().split('T')[0];
+  if(document.getElementById('f-amt'))document.getElementById('f-amt').value='';
   document.getElementById('f-desc').value='';
   document.getElementById('f-client').value='';
   if(document.getElementById('f-tel'))document.getElementById('f-tel').value='';
-  if(document.getElementById('f-total'))document.getElementById('f-total').value='';
-  if(document.getElementById('f-facture-num'))document.getElementById('f-facture-num').value='';
-  document.getElementById('f-msg').textContent='';
-  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  if(document.getElementById('f-client-sortie'))document.getElementById('f-client-sortie').value='';
+  if(document.getElementById('f-msg'))document.getElementById('f-msg').textContent='';
+  if(document.getElementById('f-msg-entree'))document.getElementById('f-msg-entree').textContent='';
+  if(document.getElementById('f-date'))document.getElementById('f-date').value=today;
+  if(document.getElementById('f-date-sortie'))document.getElementById('f-date-sortie').value=today;
   setPay(document.querySelector('.pay-btn'),'Wave');
-  const factMode=document.getElementById('fact-mode');
-  if(factMode)factMode.value='none';
-  document.getElementById('fact-new-fields').style.display='none';
-  document.getElementById('fact-existing-fields').style.display='none';
-  const lc=document.getElementById('lignes-list');if(lc)lc.innerHTML='';
+  const lc=document.getElementById('lignes-list');if(lc){lc.innerHTML='';addLigne();}
   updateCatColor();
 }
 function setType(t){
   opType=t;
   document.getElementById('btn-entree').className='type-btn in'+(t==='entree'?' active':'');
   document.getElementById('btn-sortie').className='type-btn out'+(t==='sortie'?' active':'');
-  document.getElementById('avance-section').style.display=t==='entree'?'block':'none';
+  const entreeSection=document.getElementById('entree-section');
+  const sortieSection=document.getElementById('sortie-section');
+  if(entreeSection)entreeSection.style.display=t==='entree'?'flex':'none';
+  if(sortieSection)sortieSection.style.display=t==='sortie'?'flex':'none';
+  const saveLabel=document.getElementById('btn-save-label');
+  if(saveLabel)saveLabel.textContent=t==='entree'?'📄 Créer la facture':'✓ Enregistrer la sortie';
+  if(t==='entree'&&document.getElementById('lignes-list')?.children.length===0)initLignes();
   fillCats();
 }
 function fillCats(){
@@ -846,23 +858,6 @@ function fillCats(){
 function setPay(el,mode){
   document.querySelectorAll('.pay-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');payMode=mode;
-}
-function onFactModeChange(){
-  const mode=document.getElementById('fact-mode')?.value||'none';
-  document.getElementById('fact-new-fields').style.display=mode==='new'?'block':'none';
-  document.getElementById('fact-existing-fields').style.display=mode==='existing'?'block':'none';
-  if(mode==='new'&&document.getElementById('lignes-list')?.children.length===0)initLignes();
-  // Remplir la liste des factures partielles/en attente
-  if(mode==='existing'){
-    const sel=document.getElementById('f-fact-select');
-    const available=factures.filter(f=>f.statut!=='paid');
-    sel.innerHTML=available.length
-      ?available.map(f=>`<option value="${f.id}">${f.numFacture} — ${f.client} — ${fmt(f.montantTotal)} F</option>`).join('')
-      :'<option value="">Aucune facture en attente</option>';
-  }
-}
-function toggleAvance(){
-  onFactModeChange();
 }
 function updateCatColor(){}
 // ── LIGNES DE PRESTATIONS
@@ -890,7 +885,7 @@ function calcLignesTotal(){
     total+=qte*prix;
   });
   const box=document.getElementById('lignes-total');
-  if(box){box.style.display=rows.length?'flex':'none';const v=document.getElementById('lignes-total-val');if(v)v.textContent=fmt(total)+' F';}
+  if(box){const v=document.getElementById('lignes-total-val');if(v)v.textContent=fmt(total)+' F';}
   return total;
 }
 function getLignes(){
@@ -906,7 +901,7 @@ function initLignes(){
   if(c){c.innerHTML='';addLigne();}
 }
 window.addLigne=addLigne;window.calcLignesTotal=calcLignesTotal;
-window.setType=setType;window.setPay=setPay;window.toggleAvance=toggleAvance;window.updateCatColor=updateCatColor;window.fmtAmt=fmtAmt;
+window.setType=setType;window.setPay=setPay;window.updateCatColor=updateCatColor;window.fmtAmt=fmtAmt;
 
 async function getNextFactNum(){
   const{db,doc,getDoc,setDoc}=window._fb;
@@ -920,60 +915,56 @@ async function getNextFactNum(){
 }
 
 async function saveOp(){
-  const{db,collection,addDoc,doc,setDoc,updateDoc}=window._fb;
-  const amt=parseAmt(document.getElementById('f-amt'));
+  const{db,collection,addDoc,doc,updateDoc}=window._fb;
   const desc=document.getElementById('f-desc').value.trim();
-  const client=document.getElementById('f-client').value.trim();
-  const date=document.getElementById('f-date').value;
   const cat=document.getElementById('f-cat').value;
-  const msg=document.getElementById('f-msg');
-  if(!amt||!date){msg.textContent='Montant et date obligatoires.';return;}
-  msg.textContent='';
-  const tel=document.getElementById('f-tel')?.value.trim()||'';
-  const data={montant:amt,type:opType,categorie:cat,description:desc,client,tel,date,modePaiement:payMode,ts:new Date().toISOString(),numFacture:''};
-  try{
-    const ref=await addDoc(collection(db,'users/'+uid+'/operations'),data);
-    const factMode=document.getElementById('fact-mode')?.value||'none';
-    if(opType==='entree'&&factMode==='new'){
-      // Créer une nouvelle facture avec lignes de prestations
-      const lignes=getLignes();
-      const totalLignes=lignes.reduce((s,l)=>s+l.qte*l.prixUnit,0);
-      const total=totalLignes>0?totalLignes:amt;
+
+  if(opType==='entree'){
+    // ── MODE ENTRÉE : créer une facture avec lignes ──
+    const client=document.getElementById('f-client').value.trim();
+    const tel=document.getElementById('f-tel')?.value.trim()||'';
+    const date=document.getElementById('f-date').value;
+    const msg=document.getElementById('f-msg-entree');
+    const lignes=getLignes();
+    const totalLignes=lignes.reduce((s,l)=>s+l.qte*l.prixUnit,0);
+    if(!date){if(msg)msg.textContent='La date d\'émission est obligatoire.';return;}
+    if(lignes.length===0||totalLignes===0){if(msg)msg.textContent='Ajoutez au moins une ligne de prestation.';return;}
+    if(msg)msg.textContent='';
+    try{
       const numFact=await getNextFactNum();
-      const type_paiem=amt>=total?'complet':'avance';
-      const statut=amt>=total?'paid':'partial';
       const factData={
-        montantTotal:total,client,tel,description:desc,categorie:cat,
-        dateEmission:date,numFacture:numFact,statut,
-        lignes:lignes.length>0?lignes:[],
-        paiements:[{montant:amt,date,mode:payMode,type:type_paiem,opId:ref.id}],
+        montantTotal:totalLignes,client,tel,description:desc,categorie:cat,
+        dateEmission:date,numFacture:numFact,statut:'pending',
+        lignes,paiements:[],
         ts:new Date().toISOString()
       };
-      await addDoc(collection(db,'users/'+uid+'/factures'),factData);
-      // Mettre à jour l'opération avec le numéro de facture
-      await updateDoc(doc(db,'users/'+uid+'/operations/'+ref.id),{numFacture:numFact});
-      toast('Opération + Facture '+numFact+' créées ✓');
-    } else if(opType==='entree'&&factMode==='existing'){
-      // Rattacher à une facture existante
-      const factId=document.getElementById('f-fact-select')?.value;
-      if(factId){
-        const fact=factures.find(f=>f.id===factId);
-        if(fact){
-          const{updateDoc,doc:fbDoc}=window._fb;
-          const newPaiem=[...(fact.paiements||[]),{montant:amt,date,mode:payMode,type:'solde',opId:ref.id}];
-          const enc=newPaiem.reduce((a,p)=>a+p.montant,0);
-          const statut=enc>=fact.montantTotal?'paid':'partial';
-          await updateDoc(fbDoc(db,'users/'+uid+'/factures/'+factId),{paiements:newPaiem,statut});
-          toast('Paiement rattaché à '+fact.numFacture+' ✓');
-        }
-      } else {
-        toast('Opération enregistrée ✓');
-      }
-    } else {
-      toast('Opération enregistrée ✓');
-    }
-    goP('dash',document.querySelector('.ni'));
-  }catch(e){msg.textContent='Erreur: '+e.message;}
+      const factRef=await addDoc(collection(db,'users/'+uid+'/factures'),factData);
+      // Créer aussi une opération dans le journal (montant=0 pour l'instant, sera mis à jour via Encaisser)
+      await addDoc(collection(db,'users/'+uid+'/operations'),{
+        montant:0,type:'entree',categorie:cat,description:desc,client,tel,
+        date,modePaiement:'',ts:new Date().toISOString(),numFacture:numFact
+      });
+      toast('Facture '+numFact+' créée ✓ — Utilisez Encaisser pour les paiements');
+      goP('factures',document.querySelectorAll('.ni')[2]);
+    }catch(e){if(msg)msg.textContent='Erreur: '+e.message;}
+
+  } else {
+    // ── MODE SORTIE : opération simple ──
+    const client=document.getElementById('f-client-sortie')?.value.trim()||'';
+    const amt=parseAmt(document.getElementById('f-amt'));
+    const date=document.getElementById('f-date-sortie')?.value||'';
+    const msg=document.getElementById('f-msg');
+    if(!amt||!date){if(msg)msg.textContent='Montant et date obligatoires.';return;}
+    if(msg)msg.textContent='';
+    try{
+      await addDoc(collection(db,'users/'+uid+'/operations'),{
+        montant:amt,type:'sortie',categorie:cat,description:desc,client,tel:'',
+        date,modePaiement:payMode,ts:new Date().toISOString(),numFacture:''
+      });
+      toast('Sortie enregistrée ✓');
+      goP('dash',document.querySelector('.ni'));
+    }catch(e){if(msg)msg.textContent='Erreur: '+e.message;}
+  }
 }
 window.saveOp=saveOp;
 
