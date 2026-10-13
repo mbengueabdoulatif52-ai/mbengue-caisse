@@ -165,6 +165,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .act-btn{flex:1;padding:8px 4px;border-radius:8px;border:0.5px solid var(--border);background:var(--surf2);font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;font-family:var(--font);transition:.1s}
 .act-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5}
 .act-btn.primary{background:var(--orange);border-color:var(--orange);color:#fff}
+.act-btn.act-enc{background:var(--orange);border-color:var(--orange);color:#fff;font-size:11px}
+.act-btn.act-enc.disabled{background:var(--surf2);border-color:var(--border);color:var(--text3);cursor:default}
+.act-btn.act-del{flex:0 0 36px;background:rgba(220,38,38,.08);border-color:rgba(220,38,38,.3);color:var(--red)}
 .filter-tabs{display:flex;gap:6px;padding:12px 14px 6px;overflow-x:auto}
 .filter-tabs::-webkit-scrollbar{display:none}
 .ftab{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;border:1.5px solid var(--border);background:var(--surf);color:var(--text3);cursor:pointer;white-space:nowrap;font-family:var(--font);transition:.15s}
@@ -400,10 +403,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         </div>
         <div id="fact-new-fields" style="display:none">
           <div class="fgrp">
-            <div class="flbl">Montant total de la prestation (FCFA)</div>
-            <input class="finp" id="f-total" type="text" placeholder="Ex: 200 000" inputmode="numeric" oninput="fmtAmt(this)">
+            <div class="flbl" style="margin-bottom:6px">Lignes de prestations</div>
+            <div style="display:grid;grid-template-columns:1fr 52px 80px 32px;gap:4px;margin-bottom:4px">
+              <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase">Description</div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:center">Qté</div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;text-align:right">Prix unit.</div>
+              <div></div>
+            </div>
+            <div id="lignes-list"></div>
+            <button type="button" onclick="addLigne()" style="width:100%;padding:8px;border-radius:8px;border:1.5px dashed var(--border);background:transparent;color:var(--orange);font-size:12px;font-weight:600;cursor:pointer;margin-top:4px">+ Ajouter une ligne</button>
+            <div id="lignes-total" style="display:none;margin-top:8px;padding:10px 12px;background:var(--surf2);border-radius:8px;border:1px solid var(--border);font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center">
+              <span style="color:var(--text2)">TOTAL</span>
+              <span id="lignes-total-val" style="color:var(--orange);font-variant-numeric:tabular-nums">0 F</span>
+            </div>
           </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:-6px;margin-bottom:8px">Le numéro de facture sera généré automatiquement</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:-4px;margin-bottom:8px">Le numéro de facture sera généré automatiquement</div>
         </div>
         <div id="fact-existing-fields" style="display:none">
           <div class="fgrp">
@@ -805,8 +819,8 @@ function initForm(){
   document.getElementById('f-desc').value='';
   document.getElementById('f-client').value='';
   if(document.getElementById('f-tel'))document.getElementById('f-tel').value='';
-  document.getElementById('f-total').value='';
-  document.getElementById('f-facture-num').value='';
+  if(document.getElementById('f-total'))document.getElementById('f-total').value='';
+  if(document.getElementById('f-facture-num'))document.getElementById('f-facture-num').value='';
   document.getElementById('f-msg').textContent='';
   document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
   setPay(document.querySelector('.pay-btn'),'Wave');
@@ -814,6 +828,7 @@ function initForm(){
   if(factMode)factMode.value='none';
   document.getElementById('fact-new-fields').style.display='none';
   document.getElementById('fact-existing-fields').style.display='none';
+  const lc=document.getElementById('lignes-list');if(lc)lc.innerHTML='';
   updateCatColor();
 }
 function setType(t){
@@ -836,6 +851,7 @@ function onFactModeChange(){
   const mode=document.getElementById('fact-mode')?.value||'none';
   document.getElementById('fact-new-fields').style.display=mode==='new'?'block':'none';
   document.getElementById('fact-existing-fields').style.display=mode==='existing'?'block':'none';
+  if(mode==='new'&&document.getElementById('lignes-list')?.children.length===0)initLignes();
   // Remplir la liste des factures partielles/en attente
   if(mode==='existing'){
     const sel=document.getElementById('f-fact-select');
@@ -849,6 +865,47 @@ function toggleAvance(){
   onFactModeChange();
 }
 function updateCatColor(){}
+// ── LIGNES DE PRESTATIONS
+function addLigne(desc='',qte=1,prix=''){
+  const container=document.getElementById('lignes-list');
+  const idx=container.children.length;
+  const div=document.createElement('div');
+  div.className='ligne-row';
+  div.style.cssText='display:grid;grid-template-columns:1fr 52px 80px 32px;gap:4px;margin-bottom:4px;align-items:center';
+  div.innerHTML=`
+    <input class="finp ligne-desc" type="text" placeholder="Description…" value="${desc}" oninput="calcLignesTotal()" style="font-size:12px;padding:6px 8px">
+    <input class="finp ligne-qte" type="number" min="1" value="${qte}" oninput="calcLignesTotal()" style="font-size:12px;padding:6px 8px;text-align:center">
+    <input class="finp ligne-prix" type="text" placeholder="0" value="${prix}" inputmode="numeric" oninput="fmtAmt(this);calcLignesTotal()" style="font-size:12px;padding:6px 8px;text-align:right">
+    <button type="button" onclick="this.closest('.ligne-row').remove();calcLignesTotal()" style="width:32px;height:32px;border-radius:8px;border:1.5px solid rgba(220,38,38,.3);background:rgba(220,38,38,.08);color:var(--red);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+  `;
+  container.appendChild(div);
+  calcLignesTotal();
+}
+function calcLignesTotal(){
+  const rows=document.querySelectorAll('#lignes-list .ligne-row');
+  let total=0;
+  rows.forEach(r=>{
+    const qte=parseFloat(r.querySelector('.ligne-qte').value)||0;
+    const prix=parseAmt(r.querySelector('.ligne-prix'))||0;
+    total+=qte*prix;
+  });
+  const box=document.getElementById('lignes-total');
+  if(box){box.style.display=rows.length?'flex':'none';const v=document.getElementById('lignes-total-val');if(v)v.textContent=fmt(total)+' F';}
+  return total;
+}
+function getLignes(){
+  const rows=document.querySelectorAll('#lignes-list .ligne-row');
+  return Array.from(rows).map(r=>({
+    description:r.querySelector('.ligne-desc').value.trim(),
+    qte:parseFloat(r.querySelector('.ligne-qte').value)||1,
+    prixUnit:parseAmt(r.querySelector('.ligne-prix'))||0
+  })).filter(l=>l.description||l.prixUnit>0);
+}
+function initLignes(){
+  const c=document.getElementById('lignes-list');
+  if(c){c.innerHTML='';addLigne();}
+}
+window.addLigne=addLigne;window.calcLignesTotal=calcLignesTotal;
 window.setType=setType;window.setPay=setPay;window.toggleAvance=toggleAvance;window.updateCatColor=updateCatColor;window.fmtAmt=fmtAmt;
 
 async function getNextFactNum(){
@@ -878,15 +935,17 @@ async function saveOp(){
     const ref=await addDoc(collection(db,'users/'+uid+'/operations'),data);
     const factMode=document.getElementById('fact-mode')?.value||'none';
     if(opType==='entree'&&factMode==='new'){
-      // Créer une nouvelle facture avec numéro auto
-      const totalInput=parseAmt(document.getElementById('f-total'));
-      const total=totalInput>0?totalInput:amt; // Si total non rempli, = montant saisi
+      // Créer une nouvelle facture avec lignes de prestations
+      const lignes=getLignes();
+      const totalLignes=lignes.reduce((s,l)=>s+l.qte*l.prixUnit,0);
+      const total=totalLignes>0?totalLignes:amt;
       const numFact=await getNextFactNum();
       const type_paiem=amt>=total?'complet':'avance';
       const statut=amt>=total?'paid':'partial';
       const factData={
         montantTotal:total,client,tel,description:desc,categorie:cat,
         dateEmission:date,numFacture:numFact,statut,
+        lignes:lignes.length>0?lignes:[],
         paiements:[{montant:amt,date,mode:payMode,type:type_paiem,opId:ref.id}],
         ts:new Date().toISOString()
       };
@@ -1075,7 +1134,7 @@ function factCard(f){
   const recus=(f.paiements||[]).map(p=>`
     <div class="recu-row">
       <div class="recu-dot paid"></div>
-      <div class="recu-info">${p.type||'Paiement'} · ${p.mode||'—'} · ${fmtDate(p.date)}</div>
+      <div class="recu-info">${p.label||p.type||'Paiement'} · ${p.mode||'—'} · ${fmtDate(p.date)}</div>
       <div class="recu-amt">${fmt(p.montant)} F</div>
     </div>`).join('');
   const recuPending=du>0?`<div class="recu-row"><div class="recu-dot pending"></div><div class="recu-info">Solde restant · en attente</div><div class="recu-amt" style="color:var(--text3)">${fmt(du)} F</div></div>`:'';
@@ -1096,8 +1155,11 @@ function factCard(f){
     </div>
     <div class="fact-actions">
       <div class="act-btn" onclick="genFacturePDF('${f.id}')"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF</div>
-      <div class="act-btn" onclick="deleteFact('${f.id}')" style="color:var(--red);border-color:var(--red)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg> Supprimer</div>
-
+      ${du>0
+        ?`<div class="act-btn act-enc" onclick="encaisserSolde('${f.id}',${du})">💰 Encaisser</div>`
+        :`<div class="act-btn act-enc disabled">✓ Soldée</div>`
+      }
+      <div class="act-btn act-del" onclick="deleteFact('${f.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></div>
     </div>
   </div>`;
 }
@@ -1124,15 +1186,16 @@ async function encaisserSolde(factId,montantDu){
     <div class="modal-title">Encaisser un paiement
       <button class="close-btn" onclick="this.closest('.modal-bg').remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:12px">Restant dû : <b style="color:var(--red)">${fmt(montantDu)} F</b></div>
-    <div class="fgrp"><div class="flbl">Montant encaissé</div><input class="finp" id="enc-amt" type="text" placeholder="${fmt(montantDu)}" inputmode="numeric" oninput="fmtAmt(this)"></div>
+    <div style="font-size:13px;color:var(--text3);margin-bottom:12px">${fact.numFacture} · ${fact.client} — Restant dû : <b style="color:var(--red)">${fmt(montantDu)} F</b></div>
+    <div class="fgrp"><div class="flbl">Label du paiement</div><textarea class="finp" id="enc-label" rows="2" placeholder="Ex : Solde après livraison du plan électricité…" style="resize:none;font-family:inherit;padding-top:8px"></textarea></div>
+    <div class="fgrp"><div class="flbl">Montant encaissé (FCFA)</div><input class="finp" id="enc-amt" type="text" placeholder="${fmt(montantDu)}" inputmode="numeric" oninput="fmtAmt(this)"></div>
     <div class="fgrp"><div class="flbl">Date</div><input class="finp" id="enc-date" type="date" value="${new Date().toISOString().split('T')[0]}"></div>
     <div class="pay-grid" style="margin-bottom:12px">
       <div class="pay-btn active" onclick="setPay(this,'Wave')">Wave</div>
       <div class="pay-btn" onclick="setPay(this,'Espèces')">Espèces</div>
       <div class="pay-btn" onclick="setPay(this,'Virement')">Virement</div>
     </div>
-    <button onclick="confirmEncaissement('${factId}')" class="btn-save">Confirmer l'encaissement</button>
+    <button onclick="confirmEncaissement('${factId}')" class="btn-save">✓ Valider l'encaissement</button>
   </div>`;
   bg.addEventListener('click',e=>{if(e.target===bg)bg.remove();});
   document.body.appendChild(bg);
@@ -1144,7 +1207,8 @@ async function confirmEncaissement(factId){
   if(!amt||!date){toast('Montant et date requis');return;}
   const fact=factures.find(f=>f.id===factId);
   try{
-    const paiem={montant:amt,date,mode:payMode,type:'solde',opId:'manual_'+Date.now()};
+    const label=(document.getElementById('enc-label')?.value||'').trim();
+    const paiem={montant:amt,date,mode:payMode,type:'solde',opId:'manual_'+Date.now(),...(label?{label}:{})};
     const newPaiem=[...(fact.paiements||[]),paiem];
     const enc=newPaiem.reduce((a,p)=>a+p.montant,0);
     const statut=enc>=fact.montantTotal?'paid':'partial';
@@ -1337,35 +1401,32 @@ function genFacturePDF(factId){
   doc.text('Montant (FCFA)',W-M-3,y+5.5,{align:'right'});
   y+=9;
 
-  // Ligne prestation
-  doc.setFillColor(255,255,255);
-  doc.rect(M,y,W-2*M,10,'F');
-  doc.setDrawColor(220,228,234);doc.setLineWidth(0.3);
-  doc.rect(M,y,W-2*M,10);
-  // Séparateurs verticaux
-  doc.line(c2,y,c2,y+10);
-  doc.line(c3,y,c3,y+10);
-  doc.line(c4,y,c4,y+10);
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(8.5);
-  doc.setTextColor(30,45,70);
-  doc.text((f.description||'Prestation').slice(0,45),c1+2,y+6.5);
-  doc.text('1',c2+10,y+6.5,{align:'center'});
-  doc.text(fP(f.montantTotal),c3+17,y+6.5,{align:'center'});
-  doc.text(fP(f.montantTotal),W-M-3,y+6.5,{align:'right'});
-  y+=11;
-
-  // Lignes vides
-  for(let i=0;i<2;i++){
-    doc.setFillColor(i%2===0?250:255,252,253);
-    doc.rect(M,y,W-2*M,8,'F');
+  // Lignes de prestations
+  const lignes=(f.lignes&&f.lignes.length>0)?f.lignes:[{description:f.description||'Prestation',qte:1,prixUnit:f.montantTotal}];
+  lignes.forEach((l,i)=>{
+    const rowH=10;
+    const montLigne=(l.qte||1)*(l.prixUnit||0);
+    doc.setFillColor(i%2===0?255:248,250,253);
+    doc.rect(M,y,W-2*M,rowH,'F');
     doc.setDrawColor(220,228,234);doc.setLineWidth(0.3);
-    doc.rect(M,y,W-2*M,8);
-    doc.line(c2,y,c2,y+8);
-    doc.line(c3,y,c3,y+8);
-    doc.line(c4,y,c4,y+8);
-    y+=8;
-  }
+    doc.rect(M,y,W-2*M,rowH);
+    doc.line(c2,y,c2,y+rowH);
+    doc.line(c3,y,c3,y+rowH);
+    doc.line(c4,y,c4,y+rowH);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(30,45,70);
+    // Description (tronquée à 45 chars)
+    doc.text((l.description||'').slice(0,45),c1+2,y+rowH/2+1.5);
+    // Qté
+    doc.text(String(l.qte||1),c2+10,y+rowH/2+1.5,{align:'center'});
+    // Prix unitaire
+    doc.text(fP(l.prixUnit||0),c3+17,y+rowH/2+1.5,{align:'center'});
+    // Montant
+    doc.setFont('helvetica','bold');
+    doc.text(fP(montLigne),W-M-3,y+rowH/2+1.5,{align:'right'});
+    y+=rowH;
+  });
   y+=5;
 
   // ── SOUS-TOTAL / TOTAL
@@ -1403,7 +1464,8 @@ function genFacturePDF(factId){
       doc.setFont('helvetica','normal');
       doc.setFontSize(8.5);
       doc.setTextColor(80,100,120);
-      doc.text((p.type==='avance'?'Avance':'Solde')+' — '+p.mode+' — '+fD(p.date),M+3,y+4);
+      const pLabel=p.label||(p.type==='avance'?'Avance':'Paiement');
+      doc.text(pLabel+' — '+p.mode+' — '+fD(p.date),M+3,y+4);
       doc.setTextColor(46,180,96);
       doc.text('+'+fP(p.montant)+' FCFA',W-M-3,y+4,{align:'right'});
       y+=7;
