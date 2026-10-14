@@ -34,8 +34,8 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;min-height:100%}
 body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;
-  padding-left:max(0px,env(safe-area-inset-left,0px));
-  padding-right:max(0px,env(safe-area-inset-right,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
 }
 button{font-family:var(--font);cursor:pointer;border:none;background:none;color:inherit}
 svg{display:block;flex-shrink:0}
@@ -82,13 +82,17 @@ a{text-decoration:none}
 .week-badge{font-size:10px;font-weight:700;color:var(--violet);background:var(--violet-l);border-radius:20px;padding:3px 10px}
 
 /* MAIN */
-.main{padding:14px 16px;overflow-x:auto}
+.main{padding:14px 0}
 
-/* DAYS GRID */
-.days-grid{display:grid;grid-template-columns:repeat(5,minmax(140px,1fr));gap:10px;min-width:700px;margin-bottom:16px}
+/* DAYS STRIP — scroll horizontal limité au bandeau, pas au body */
+.days-strip-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.days-strip-wrap::-webkit-scrollbar{display:none}
+.days-strip{display:flex;gap:8px;padding:0 16px 12px;width:max-content}
+/* compatibilité : garde .days-grid comme alias */
+.days-grid{display:flex;gap:8px;padding:0 16px 12px;width:max-content;margin-bottom:0}
 
 /* DAY COLUMN */
-.day-col{background:var(--surf);border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
+.day-col{width:145px;flex-shrink:0;background:var(--surf);border-radius:var(--r);border:1.5px solid var(--border);overflow:hidden;display:flex;flex-direction:column}
 .day-col.today{border-color:var(--violet)}
 .day-col.today .day-name{color:var(--violet)}
 .day-col.today .day-date{color:var(--violet)}
@@ -214,13 +218,9 @@ a{text-decoration:none}
 <body>
 
 <div id="loading">
-  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-    <polygon points="22,4 38,13 38,31 22,40 6,31 6,13" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
-    <rect x="15" y="18" width="14" height="12" rx="1" fill="#e8761a" opacity=".9"/>
-    <polygon points="22,10 32,18 12,18" fill="rgba(232,118,26,.45)"/>
-    <rect x="19" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-    <rect x="23" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-  </svg>
+  <div style="width:64px;height:64px;border-radius:16px;overflow:hidden;box-shadow:0 8px 28px rgba(0,0,0,.4)">
+    <img src="icon-192.png" alt="MBENGUE ARCHIBUILDING" style="width:100%;height:100%;object-fit:cover">
+  </div>
   <div class="ld-name">Archi<span>Temps</span></div>
   <div class="ld-dot"></div>
 </div>
@@ -274,8 +274,10 @@ a{text-decoration:none}
     </div>
 
     <div class="main">
-      <div class="days-grid" id="days-grid"></div>
-      <div class="recap" id="recap-block"></div>
+      <div class="days-strip-wrap">
+        <div class="days-grid" id="days-grid"></div>
+      </div>
+      <div style="padding:0 16px"><div class="recap" id="recap-block"></div></div>
     </div>
   </div>
 
