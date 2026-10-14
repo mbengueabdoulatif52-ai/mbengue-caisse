@@ -237,7 +237,7 @@ a{text-decoration:none}
 <div id="app">
   <!-- TOPBAR -->
   <div class="topbar">
-    <a class="tb-back" href="index.html">
+    <a class="tb-back" href="index.html" onclick="event.preventDefault();location.replace('index.html')">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
     </a>
     <div class="tb-info">
@@ -416,7 +416,7 @@ onAuthStateChanged(auth,user=>{
     uid=user.uid;
     // Si session non accordée (ouverture directe sans passer par index), on renvoie vers index
     if(!sessionOK()){
-      window.location.href='index.html';
+      window.location.replace('index.html');
       return;
     }
     document.getElementById('auth').style.display='none';
