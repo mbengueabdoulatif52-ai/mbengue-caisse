@@ -406,11 +406,19 @@ function today(){const d=new Date();d.setHours(0,0,0,0);return d;}
 // ── AUTH
 window.signIn=async()=>{try{await signInWithPopup(auth,provider);}catch(e){console.error(e);}};
 
+// ── SESSION partagée avec index.html (PIN vérifié là-bas)
+function sessionOK(){try{return sessionStorage.getItem('mbcaisse-session')==='1';}catch(e){return false;}}
+
 onAuthStateChanged(auth,user=>{
   document.getElementById('loading').style.display='none';
   unsubs.forEach(u=>u&&u());unsubs=[];
   if(user){
     uid=user.uid;
+    // Si session non accordée (ouverture directe sans passer par index), on renvoie vers index
+    if(!sessionOK()){
+      window.location.href='index.html';
+      return;
+    }
     document.getElementById('auth').style.display='none';
     document.getElementById('app').style.display='flex';
     subscribe();

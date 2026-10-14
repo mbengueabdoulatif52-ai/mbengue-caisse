@@ -592,24 +592,15 @@ onAuthStateChanged(auth,user=>{
   if(user){
     window._uid=user.uid;
     if(typeof uid!=='undefined')uid=user.uid;
-    if(typeof hasPin==='function'&&hasPin()){
-      document.getElementById('auth').style.display='none';
-      if(typeof showLockScreen==='function'){
-        window._isLocked=true;
-        showLockScreen(false);
-        window._onPinSuccess=()=>{
-          if(window._uid)uid=window._uid;
-          document.getElementById('app').style.display='flex';
-          if(typeof subscribe==='function'){subscribe();setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);}
-          if(typeof resetLockTimer==='function')resetLockTimer();
-        };
-      }
-    } else {
-      document.getElementById('auth').style.display='none';
-      document.getElementById('app').style.display='flex';
-      if(typeof subscribe==='function'){subscribe();setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);}
-      if(typeof resetLockTimer==='function')resetLockTimer();
+    // Si session non accordée (pas passé par index.html), on renvoie là-bas pour le PIN
+    if(typeof hasPin==='function'&&hasPin()&&!sessionOK()){
+      window.location.href='index.html';
+      return;
     }
+    document.getElementById('auth').style.display='none';
+    document.getElementById('app').style.display='flex';
+    if(typeof subscribe==='function'){subscribe();setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);}
+    if(typeof resetLockTimer==='function')resetLockTimer();
   } else {
     window._uid=null;
     document.getElementById('auth').style.display='flex';
@@ -1656,6 +1647,7 @@ function pinKey(k){
       } else {
         if(pinInput===getPin()){
           pinInput='';overlay.remove();isLocked=false;
+          grantSession();
           if(window._onPinSuccess){
             window._onPinSuccess();window._onPinSuccess=null;
           } else {
@@ -1724,6 +1716,7 @@ async function tryBiometric(){
       const overlay=document.getElementById('lock-overlay');
       if(overlay){
         overlay.remove();isLocked=false;
+        grantSession();
         if(window._onPinSuccess){
           window._onPinSuccess();window._onPinSuccess=null;
         } else {
@@ -1751,9 +1744,12 @@ async function tryBiometric(){
   }
 }
 
+function sessionOK(){try{return sessionStorage.getItem('mbcaisse-session')==='1';}catch(e){return false;}}
+function grantSession(){try{sessionStorage.setItem('mbcaisse-session','1');}catch(e){}}
+
 function checkLockOnStart(){
-  if(hasPin()){isLocked=true;showLockScreen(false);}
-  resetLockTimer();
+  if(hasPin()&&!sessionOK()){isLocked=true;showLockScreen(false);}
+  else{resetLockTimer();}
 }
 
 function setupPin(){pinInput='';showLockScreen(true);}
