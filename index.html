@@ -38,7 +38,8 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 
 /* LOADING */
 #loading{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
-.ld-logo{width:64px;height:64px;background:linear-gradient(135deg,var(--navy2),#0d2236);border-radius:18px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.ld-logo{width:80px;height:80px;border-radius:20px;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.ld-logo img{width:100%;height:100%;object-fit:cover}
 .ld-name{font-size:22px;font-weight:900;color:#fff}
 .ld-name span{color:var(--orange)}
 .ld-dot{width:8px;height:8px;border-radius:50%;background:var(--orange);animation:pulse 1.2s ease-in-out infinite}
@@ -46,7 +47,8 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 
 /* AUTH */
 #auth{position:fixed;inset:0;background:var(--navy);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:998;padding:32px;text-align:center}
-.auth-logo{margin-bottom:24px}
+.auth-logo{margin-bottom:24px;width:88px;height:88px;border-radius:22px;overflow:hidden;margin-left:auto;margin-right:auto;box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.auth-logo img{width:100%;height:100%;object-fit:cover}
 .auth-title{font-size:24px;font-weight:800;color:#fff;margin-bottom:6px}
 .auth-title span{color:var(--orange)}
 .auth-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:32px;line-height:1.6}
@@ -58,7 +60,8 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 
 /* HEADER */
 .header{padding-block-start:max(24px,env(safe-area-inset-top,0px));padding-bottom:4px;display:flex;flex-direction:column;align-items:center;text-align:center}
-.logo-wrap{width:68px;height:68px;background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:19px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 8px 28px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.06)}
+.logo-wrap{width:80px;height:80px;border-radius:20px;overflow:hidden;margin:0 auto 14px;box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.logo-wrap img{width:100%;height:100%;object-fit:cover}
 .app-name{font-size:26px;font-weight:900;letter-spacing:-.5px}
 .app-name span{color:var(--orange)}
 .app-tagline{font-size:12px;color:var(--text2);margin-top:3px}
@@ -120,13 +123,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 <!-- LOADING -->
 <div id="loading">
   <div class="ld-logo">
-    <svg width="40" height="40" viewBox="0 0 44 44" fill="none">
-      <polygon points="22,4 38,13 38,31 22,40 6,31 6,13" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
-      <rect x="15" y="18" width="14" height="12" rx="1" fill="#e8761a" opacity=".9"/>
-      <polygon points="22,10 32,18 12,18" fill="rgba(232,118,26,.45)"/>
-      <rect x="19" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-      <rect x="23" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-    </svg>
+    <img src="icon-192.png" alt="MBENGUE ARCHIBUILDING">
   </div>
   <div class="ld-name">Archi<span>Board</span></div>
   <div class="ld-dot"></div>
@@ -135,13 +132,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 <!-- AUTH -->
 <div id="auth">
   <div class="auth-logo">
-    <svg width="56" height="56" viewBox="0 0 44 44" fill="none">
-      <polygon points="22,4 38,13 38,31 22,40 6,31 6,13" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.5"/>
-      <rect x="15" y="18" width="14" height="12" rx="1" fill="#e8761a"/>
-      <polygon points="22,10 32,18 12,18" fill="rgba(232,118,26,.5)"/>
-      <rect x="19" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-      <rect x="23" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-    </svg>
+    <img src="icon-192.png" alt="MBENGUE ARCHIBUILDING">
   </div>
   <div class="auth-title">Archi<span>Board</span></div>
   <div class="auth-sub">Votre espace de gestion professionnel<br>MBENGUE ARCHIBUILDING</div>
@@ -155,15 +146,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 <div id="app">
   <div class="header">
     <div class="logo-wrap">
-      <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
-        <polygon points="22,4 38,13 38,31 22,40 6,31 6,13" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="1.5"/>
-        <rect x="15" y="18" width="14" height="12" rx="1" fill="#e8761a" opacity=".9"/>
-        <polygon points="22,10 32,18 12,18" fill="rgba(232,118,26,.45)"/>
-        <rect x="19" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-        <rect x="23" y="22" width="3" height="4" rx=".5" fill="rgba(255,255,255,.4)"/>
-        <rect x="19" y="18.5" width="2" height="2" rx=".3" fill="rgba(255,255,255,.45)"/>
-        <rect x="23" y="18.5" width="2" height="2" rx=".3" fill="rgba(255,255,255,.45)"/>
-      </svg>
+      <img src="icon-192.png" alt="MBENGUE ARCHIBUILDING">
     </div>
     <div class="app-name">Archi<span>Board</span></div>
     <div class="app-tagline">Votre espace de gestion professionnel</div>
