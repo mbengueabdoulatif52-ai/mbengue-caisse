@@ -1,7 +1,7 @@
 {
-  "name": "MBENGUE ARCHIBUILDING — Caisse",
-  "short_name": "MB Caisse",
-  "description": "Journal de caisse MBENGUE ARCHIBUILDING",
+  "name": "ArchiBoard — MBENGUE ARCHIBUILDING",
+  "short_name": "ArchiBoard",
+  "description": "Hub ArchiBoard — MBENGUE ARCHIBUILDING",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1B3A52",
