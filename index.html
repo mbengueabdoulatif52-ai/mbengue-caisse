@@ -181,7 +181,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
           </div>
           <div class="mc-stat">
             <div class="mc-stat-val" id="stat-mois">Oct.</div>
-            <div class="mc-stat-lbl">PÉRIODE</div>
+            <div class="mc-stat-lbl">CUMUL</div>
           </div>
         </div>
       </div>
@@ -472,28 +472,20 @@ function showBoard(user){
     else{av.textContent=(user.displayName||'AB').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();}
     document.getElementById('user-name').textContent=user.displayName||user.email||'Utilisateur';
 
-    // Stats mois courant
+    // Stats globales (toutes opérations, toutes factures)
     const now=new Date();
-    document.getElementById('stat-mois').textContent=MOIS_SHORT[now.getMonth()];
-    const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById('stat-mois').textContent='Total';
 
-    // Ops du mois → solde (caisse.html stocke 'date' YYYY-MM-DD, pas de champ 'ym')
+    // Solde total toutes opérations confondues
     const uid=user.uid;
-    const ymPrefix=ym+'-';
     const u1=onSnapshot(collection(db,`users/${uid}/operations`),snap=>{
       let solde=0;
-      snap.forEach(d=>{
-        const o=d.data();
-        // Comptabiliser si la date commence par le mois courant (YYYY-MM-DD)
-        if((o.date&&String(o.date).startsWith(ymPrefix))||(o.ym&&o.ym===ym)){
-          solde+=(o.type==='entree'?1:-1)*(o.montant||0);
-        }
-      });
+      snap.forEach(d=>{const o=d.data();solde+=(o.type==='entree'?1:-1)*(o.montant||0);});
       document.getElementById('stat-solde').textContent=fmt(solde);
     });
     unsubs.push(u1);
 
-    // Factures actives (statuts: 'pending' = en attente, 'partial' = partiel, 'paid' = soldée)
+    // Factures actives total (pending = en attente, partial = partiellement encaissée)
     const u2=onSnapshot(collection(db,`users/${uid}/factures`),snap=>{
       const actives=snap.docs.filter(d=>['pending','partial'].includes(d.data().statut));
       document.getElementById('stat-factures').textContent=actives.length;
