@@ -477,18 +477,25 @@ function showBoard(user){
     document.getElementById('stat-mois').textContent=MOIS_SHORT[now.getMonth()];
     const ym=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-    // Ops du mois → solde
+    // Ops du mois → solde (caisse.html stocke 'date' YYYY-MM-DD, pas de champ 'ym')
     const uid=user.uid;
-    const u1=onSnapshot(query(collection(db,`users/${uid}/operations`),where('ym','==',ym)),snap=>{
+    const ymPrefix=ym+'-';
+    const u1=onSnapshot(collection(db,`users/${uid}/operations`),snap=>{
       let solde=0;
-      snap.forEach(d=>{const o=d.data();solde+=(o.type==='entree'?1:-1)*(o.montant||0);});
+      snap.forEach(d=>{
+        const o=d.data();
+        // Comptabiliser si la date commence par le mois courant (YYYY-MM-DD)
+        if((o.date&&String(o.date).startsWith(ymPrefix))||(o.ym&&o.ym===ym)){
+          solde+=(o.type==='entree'?1:-1)*(o.montant||0);
+        }
+      });
       document.getElementById('stat-solde').textContent=fmt(solde);
     });
     unsubs.push(u1);
 
-    // Factures
+    // Factures actives (statuts: 'pending' = en attente, 'partial' = partiel, 'paid' = soldée)
     const u2=onSnapshot(collection(db,`users/${uid}/factures`),snap=>{
-      const actives=snap.docs.filter(d=>['En cours','Partiel'].includes(d.data().statut));
+      const actives=snap.docs.filter(d=>['pending','partial'].includes(d.data().statut));
       document.getElementById('stat-factures').textContent=actives.length;
     });
     unsubs.push(u2);
