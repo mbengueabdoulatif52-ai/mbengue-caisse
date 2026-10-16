@@ -151,10 +151,10 @@ a{text-decoration:none}
 .stat-bar{height:3px;border-radius:3px;transition:.3s}
 .recap-days{background:var(--surf2);border-radius:var(--rs);border:1px solid var(--border);padding:12px;grid-column:1/-1}
 .recap-days-title{font-size:9px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
-.recap-days-row{display:flex;gap:6px}
+.recap-days-row{display:flex;gap:3px}
 .recap-day-pill{flex:1;text-align:center}
-.rdp-day{font-size:9px;font-weight:700;color:var(--text3);margin-bottom:4px}
-.rdp-circle{width:32px;height:32px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;transition:.2s}
+.rdp-day{font-size:8px;font-weight:700;color:var(--text3);margin-bottom:4px}
+.rdp-circle{width:28px;height:28px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;transition:.2s}
 .rdp-circle.filled{background:var(--violet);color:#fff}
 .rdp-circle.empty{background:var(--surf);border:1.5px solid var(--border);color:var(--text3)}
 .rdp-circle.today-empty{border:2px solid var(--violet)}
@@ -388,7 +388,7 @@ function getActColor(name){
 }
 
 // ── DATES
-const DAYS_FR=['Lun','Mar','Mer','Jeu','Ven'];
+const DAYS_FR=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
 const MONTHS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 const MONTHS_LONG=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
@@ -478,12 +478,12 @@ function renderWeek(){
   grid.innerHTML='';
 
   const weekDates=[];
-  for(let i=0;i<5;i++){
+  for(let i=0;i<7;i++){
     const d=new Date(ws);d.setDate(ws.getDate()+i);
     weekDates.push(dateStr(d));
   }
 
-  for(let i=0;i<5;i++){
+  for(let i=0;i<7;i++){
     const d=new Date(ws);d.setDate(ws.getDate()+i);
     const ds=dateStr(d);
     const dayEntries=activites.filter(e=>e.date===ds);
