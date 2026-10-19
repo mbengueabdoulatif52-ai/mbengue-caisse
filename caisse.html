@@ -112,6 +112,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .bp-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
 .bp-avatar{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;background:var(--navy);flex-shrink:0}
 .bp-name{font-size:16px;font-weight:700}.bp-date{font-size:11px;color:var(--text3);margin-top:2px}
+.pret-chip{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:#e8f0fa;color:var(--navy);vertical-align:middle}
+.pret-lock{margin-top:14px;background:#e8f0fa;color:#1a1f26;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5}
+.pret-lock strong{display:block;font-size:12px;margin-bottom:2px;color:var(--navy)}
 .bp-act{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .bp-act svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
 .bp-act-edit{background:#e8f0fa;color:var(--navy)}.bp-act-del{background:#fff0f0;color:#c0392b}
@@ -819,7 +822,11 @@ function subscribePrets(){
   if(unsubPrets)unsubPrets();
   unsubPrets=onSnapshot(
     query(collection(db,'users/'+_uid+'/prets'),orderBy('ts','desc')),
-    snap=>{prets=snap.docs.map(d=>({id:d.id,...d.data()}));if(window._curPage==='prets')renderPrets();}
+    snap=>{
+      prets=snap.docs.map(d=>({id:d.id,...d.data()}));
+      if(window._curPage==='prets')renderPrets();
+      else if(window._curPage==='journal'&&typeof renderJournal==='function')renderJournal();
+    }
   );
 }
 window.subscribePrets=subscribePrets;
@@ -1376,11 +1383,25 @@ function opRow(o){
     </div>
     <div class="op-info">
       <div class="op-desc">${o.description||o.client||'—'}</div>
-      <div class="op-meta">${fmtDate(o.date)} · ${o.modePaiement||'—'}${o.client?` · ${o.client}`:''} <span class="cat-badge ${css}">${o.categorie||''}</span></div>
+      <div class="op-meta">${fmtDate(o.date)} · ${o.modePaiement||'—'}${o.client?` · ${o.client}`:''} <span class="cat-badge ${css}">${o.categorie||''}</span>${linkedPret(o)?' <span class="pret-chip">Prêt</span>':''}</div>
     </div>
     <div class="op-amt ${isE?'green':'red'}">${isE?'+':'−'}${fmt(o.montant)} F</div>
   </div>`;
 }
+// Prêt rattaché à une opération du journal (null si aucun ou si le prêt n'existe plus)
+function linkedPret(o){
+  if(!o||!o.pretId||typeof prets==='undefined')return null;
+  return prets.find(p=>p.id===o.pretId)||null;
+}
+function goPretFromOp(opId){
+  const o=ops.find(x=>x.id===opId);
+  const p=linkedPret(o);
+  document.querySelectorAll('.modal-bg').forEach(m=>m.remove());
+  if(!p)return;
+  goP('prets',null);
+  openPretDetail(p.id);
+}
+window.goPretFromOp=goPretFromOp;
 function fmtDate(d){if(!d)return'';const p=d.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0].slice(2):d;}
 
 // ── JOURNAL
@@ -1589,10 +1610,12 @@ function openOpDetail(id){
     ${detailRow('Client',o.client||'—')}
     ${detailRow('Catégorie',o.categorie||'—')}
     ${detailRow('Mode de paiement',o.modePaiement||'—')}
+    ${linkedPret(o)?`<div class="pret-lock"><strong>🔗 Liée au prêt de ${(()=>{const p=linkedPret(o);return p.type==='perso'?'M. Bengue (avance perso)':(p.beneficiaire||'—');})()}</strong>Pour modifier ou supprimer cette opération, passe par la fiche du prêt : le journal suivra automatiquement.</div>
+    <button onclick="goPretFromOp('${o.id}')" style="width:100%;margin-top:10px;padding:12px;border-radius:10px;border:none;background:var(--navy);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Ouvrir la fiche du prêt</button>`:`
     <div style="display:flex;gap:8px;margin-top:16px">
       <button onclick="editOp('${o.id}')" style="flex:1;padding:12px;border-radius:10px;border:0.5px solid var(--orange);background:#fff8f0;color:var(--orange);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Modifier</button>
       <button onclick="deleteOp('${o.id}',this)" style="flex:1;padding:12px;border-radius:10px;border:0.5px solid var(--border);background:var(--surf2);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Supprimer</button>
-    </div>
+    </div>`}
   </div>`;
   bg.addEventListener('click',e=>{if(e.target===bg)bg.remove();});
   document.body.appendChild(bg);
@@ -1606,6 +1629,7 @@ function detailRow(label,val){
 function editOp(id){
   const o=ops.find(x=>x.id===id);
   if(!o)return;
+  if(linkedPret(o)){goPretFromOp(id);return;}
   document.querySelector('.modal-bg')?.remove();
   const bg=document.createElement('div');
   bg.className='modal-bg';
@@ -1683,6 +1707,7 @@ async function saveEditOp(id){
 }
 
 async function deleteOp(id,btn){
+  if(linkedPret(ops.find(x=>x.id===id))){goPretFromOp(id);return;}
   if(!confirm('Supprimer cette opération ?'))return;
   const{db,doc,deleteDoc,updateDoc}=window._fb;
   try{
