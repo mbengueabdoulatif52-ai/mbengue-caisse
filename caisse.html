@@ -2400,11 +2400,29 @@ function renderJournal(){
 }
 
 // ── EXPORT PDF JOURNAL
+// Période exportée = ce qui est affiché dans le journal (mois sélectionné ou « Tout afficher »)
+function exportScope(){
+  const all=journalFilter==='alltime';
+  const list=(all?[...ops]:opsOfMonth()).slice()
+    .sort((a,b)=>(a.date||'').localeCompare(b.date||'')||String(a.ts||'').localeCompare(String(b.ts||'')));
+  const dates=list.map(o=>o.date).filter(Boolean);
+  let label=MOIS[curMonth-1]+' '+curYear;
+  if(all){
+    label='Toutes les périodes';
+    if(dates.length){
+      const f=d=>{const p=d.split('-');return MOIS[parseInt(p[1],10)-1]+' '+p[0];};
+      const a=f(dates[0]),b=f(dates[dates.length-1]);
+      label=a===b?a:a+' → '+b;
+    }
+  }
+  return{list,all,label,tag:all?'Complet':curYM()};
+}
 function exportJournalPDF(){
   if(typeof window.jspdf==='undefined'){toast('jsPDF non charge');return;}
   const{jsPDF}=window.jspdf;
-  const t=opsOfMonth().slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  if(!t.length){toast('Aucune opération ce mois');return;}
+  const scope=exportScope();
+  const t=scope.list;
+  if(!t.length){toast(scope.all?'Aucune opération à exporter':'Aucune opération ce mois');return;}
   const totalE=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
   const totalS=t.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
   const solde=totalE-totalS;
@@ -2433,7 +2451,7 @@ function exportJournalPDF(){
   doc.setFont('helvetica','bold');
   doc.setFontSize(11);
   doc.setTextColor(...WHITE);
-  doc.text(MOIS[curMonth-1].toUpperCase()+' '+curYear,W-M,12,{align:'right'});
+  doc.text(scope.label.toUpperCase(),W-M,12,{align:'right'});
   doc.setFont('helvetica','normal');
   doc.setFontSize(7.5);
   doc.setTextColor(180,200,220);
@@ -2604,14 +2622,15 @@ function exportJournalPDF(){
     doc.text('Page '+i+'/'+pages,W-M,208,{align:'right'});
   }
 
-  doc.save('Journal_MB_'+curYM()+'.pdf');
+  doc.save('Journal_MB_'+scope.tag+'.pdf');
   toast('PDF journal telecharge !');
 }
 
 // ── EXPORT EXCEL
 function exportExcel(){
   if(typeof XLSX==='undefined'){toast('Chargement en cours...');return;}
-  const t=opsOfMonth();
+  const scope=exportScope();
+  const t=scope.list;
   if(!t.length){toast('Aucune opération à exporter');return;}
   const wb=XLSX.utils.book_new();
   const totalE=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
@@ -2639,7 +2658,7 @@ function exportExcel(){
   // ── FEUILLE 1 : Journal de caisse
   const aoa1=[
     ['Journal de caisse — MBENGUE ARCHIBUILDING','','','','','','','','',''],
-    ['Suivi des entrées et sorties financières — '+MOIS[curMonth-1]+' '+curYear,'','','','','','','','',''],
+    ['Suivi des entrées et sorties financières — '+scope.label,'','','','','','','','',''],
     ['','','','','','','','','',''],
     ['Date',"Nature de l'opération",'Client / Fournisseur','Type','Catégorie','Entrée (FCFA)','Sortie (FCFA)','Mode de paiement','N° Facture','Solde (FCFA)'],
     ...t.map((o,i)=>[
@@ -2724,8 +2743,8 @@ function exportExcel(){
     ['Catégorie','Total Entrées (FCFA)','Total Sorties (FCFA)','Solde net (FCFA)'],
     ...cats2.map((cat,i)=>[
       cat,
-      {f:"SUMIFS('Journal de caisse'!$F$5:$F$500,'Journal de caisse'!$E$5:$E$500,A"+(i+5)+')'},
-      {f:"SUMIFS('Journal de caisse'!$G$5:$G$500,'Journal de caisse'!$E$5:$E$500,A"+(i+5)+')'},
+      {f:"SUMIFS('Journal de caisse'!$F$5:$F$10000,'Journal de caisse'!$E$5:$E$10000,A"+(i+5)+')'},
+      {f:"SUMIFS('Journal de caisse'!$G$5:$G$10000,'Journal de caisse'!$E$5:$E$10000,A"+(i+5)+')'},
       {f:'B'+(i+5)+'-C'+(i+5)}
     ]),
     ['TOTAL',
@@ -2765,7 +2784,7 @@ function exportExcel(){
 
   XLSX.utils.book_append_sheet(wb,ws1,'Journal de caisse');
   XLSX.utils.book_append_sheet(wb,ws2,'Résumé');
-  XLSX.writeFile(wb,'Journal_MB_'+curYM()+'.xlsx');
+  XLSX.writeFile(wb,'Journal_MB_'+scope.tag+'.xlsx');
   toast('Export Excel téléchargé ✓');
 }
 
