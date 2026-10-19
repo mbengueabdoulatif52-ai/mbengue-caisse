@@ -65,6 +65,71 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .fab-wrap{margin-top:-18px;display:flex;align-items:center;justify-content:center;flex:1}
 .fab{width:50px;height:50px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 12px rgba(232,118,26,.4)}
 .fab svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.5}
+/* FAB MENU */
+.fab-menu-overlay{position:fixed;inset:0;z-index:48;background:rgba(0,0,0,.35)}
+.fab-menu-popup{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:49;display:flex;flex-direction:column;align-items:center;gap:10px;width:220px}
+.fab-menu-item{width:100%;background:var(--surf);border:0.5px solid var(--border);border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.12);transition:.12s;font-family:var(--font)}
+.fab-menu-item:active{opacity:.85}
+.fab-menu-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
+.fab-menu-item.fm-in{color:#1a8c4e}.fab-menu-item.fm-out{color:#c0392b}.fab-menu-item.fm-pret{color:var(--navy)}
+/* PAGE PRÊTS */
+.pret-stats{background:var(--navy);padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
+.pret-stat{background:rgba(255,255,255,.08);border-radius:10px;padding:10px 12px}
+.pret-stat-lbl{font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.pret-stat-val{font-size:15px;font-weight:700;color:#fff;font-family:var(--mono)}
+.pret-stat-val.orange{color:var(--orange)}.pret-stat-val.green{color:var(--green)}
+.pret-ftabs{display:flex;gap:6px;padding:10px 14px 6px;overflow-x:auto}
+.pret-ftabs::-webkit-scrollbar{display:none}
+.pret-card{background:var(--surf);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin:0 14px 8px;cursor:pointer}
+.pret-card.self-pret{border-style:dashed;border-width:1.5px}
+.pret-card-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.pret-avatar{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;background:var(--navy)}
+.pret-info{flex:1;min-width:0}
+.pret-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pret-meta{font-size:10px;color:var(--text3);margin-top:2px}
+.pret-badge{font-size:9px;font-weight:700;padding:3px 9px;border-radius:8px;flex-shrink:0}
+.pb-encours{background:#fff8e0;color:#b8860b}.pb-solde{background:#f0fdf4;color:#1a8c4e}.pb-retard{background:#fff0f0;color:#c0392b}
+.pret-prog-track{height:5px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:8px}
+.pret-prog-fill{height:100%;border-radius:4px;background:var(--orange)}
+.pret-prog-fill.pg-good{background:var(--green)}.pret-prog-fill.pg-warn{background:var(--red)}
+.pret-amounts{display:flex;padding-top:6px;border-top:0.5px solid var(--border)}
+.pret-amt-col{flex:1;text-align:center}
+.pret-amt-col+.pret-amt-col{border-left:0.5px solid var(--border)}
+.pret-amt-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:2px;font-weight:600}
+.pret-amt-val{font-size:12px;font-weight:700;font-family:var(--mono)}
+.pret-amt-val.orange{color:var(--orange)}.pret-amt-val.green{color:var(--green)}
+/* FORMULAIRE PRÊT */
+.pret-type-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.pret-type-btn{padding:10px;border-radius:12px;border:2px solid var(--border);background:var(--surf);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--text3);transition:.15s;font-family:var(--font)}
+.pret-type-btn.active{border-color:var(--navy);background:#eef3f7;color:var(--navy)}
+/* DETAIL PANEL */
+.bottom-panel{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;align-items:flex-end}
+.bottom-panel-inner{background:var(--surf);border-radius:20px 20px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom,16px)}
+.bp-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:12px auto 14px}
+.bp-body{padding:0 16px 16px}
+.bp-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.bp-avatar{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;background:var(--navy);flex-shrink:0}
+.bp-name{font-size:16px;font-weight:700}.bp-date{font-size:11px;color:var(--text3);margin-top:2px}
+.bp-close{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--border);border:none;cursor:pointer;font-size:16px;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bp-big-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.bp-bs{background:var(--surf2);border-radius:10px;padding:10px;text-align:center;border:0.5px solid var(--border)}
+.bp-bs-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:3px;font-weight:600}
+.bp-bs-val{font-size:14px;font-weight:700;font-family:var(--mono)}
+.tl-item{position:relative;padding:0 0 12px 18px}
+.tl-item::before{content:"";position:absolute;left:5px;top:0;bottom:0;width:1px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{position:absolute;left:0;top:4px;width:11px;height:11px;border-radius:50%;background:var(--orange);border:2px solid var(--surf)}
+.tl-dot.paid{background:var(--green)}
+.tl-row{display:flex;justify-content:space-between;align-items:baseline}
+.tl-desc{font-size:12px;font-weight:500}.tl-amt{font-size:12px;font-weight:700;font-family:var(--mono);color:var(--green)}
+.tl-date{font-size:10px;color:var(--text3);margin-top:1px}
+.btn-remb{width:100%;background:var(--navy);border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;margin-top:14px;font-family:var(--font)}
+/* FORM REMB */
+.remb-rest-chip{background:var(--surf2);border:0.5px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.remb-rest-lbl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.remb-rest-val{font-size:16px;font-weight:700;font-family:var(--mono);color:var(--orange)}
+.solde-toggle-row{display:flex;align-items:center;gap:10px;background:#f0fdf4;border:0.5px solid rgba(46,204,113,.3);border-radius:10px;padding:11px 14px;margin-bottom:12px}
+.solde-toggle-lbl{flex:1;font-size:12px;font-weight:600;color:#1a8c4e}
 
 /* CARDS */
 .card{background:var(--surf);border:0.5px solid var(--border);border-radius:var(--r);padding:14px;margin:0 14px 10px}
@@ -461,7 +526,25 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
     <div id="factures-list"></div>
   </div>
 
-  <!-- STATS -->
+  <!-- PRÊTS -->
+  <div id="page-prets" class="page">
+    <div class="pret-stats">
+      <div class="pret-stat"><div class="pret-stat-lbl">Total prêté</div><div class="pret-stat-val orange" id="ps-total">0 F</div></div>
+      <div class="pret-stat"><div class="pret-stat-lbl">Restant dû</div><div class="pret-stat-val" id="ps-rest">0 F</div></div>
+      <div class="pret-stat"><div class="pret-stat-lbl">Remboursé</div><div class="pret-stat-val green" id="ps-remb">0 F</div></div>
+      <div class="pret-stat"><div class="pret-stat-lbl">Prêts actifs</div><div class="pret-stat-val" id="ps-actifs">0</div></div>
+    </div>
+    <div class="pret-ftabs">
+      <div class="ftab active" onclick="setPretFilter('all',this)">Tous</div>
+      <div class="ftab" onclick="setPretFilter('encours',this)">En cours</div>
+      <div class="ftab" onclick="setPretFilter('retard',this)">En retard</div>
+      <div class="ftab" onclick="setPretFilter('solde',this)">Soldés</div>
+    </div>
+    <div id="prets-list" style="padding-top:4px"></div>
+    <div style="height:20px"></div>
+  </div>
+
+<!-- STATS -->
   <div id="page-stats" class="page">
     <div class="stats-hero">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
@@ -537,6 +620,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   </div>
 
   <!-- NAVBAR -->
+  <!-- FAB MENU CONTEXTUEL -->
+  <div class="fab-menu-overlay" id="fab-menu-overlay" hidden onclick="closeFabMenu()"></div>
+  <div class="fab-menu-popup" id="fab-menu-popup" hidden>
+    <div class="fab-menu-item fm-in" onclick="closeFabMenu();goP('form',null);setTimeout(()=>setOpType('entree'),50)">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Entrée de fonds
+    </div>
+    <div class="fab-menu-item fm-out" onclick="closeFabMenu();goP('form',null);setTimeout(()=>setOpType('sortie'),50)">
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Sortie de fonds
+    </div>
+    <div class="fab-menu-item fm-pret" onclick="closeFabMenu();openPretForm()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+      Prêt / Avance
+    </div>
+  </div>
+
   <nav class="navbar">
     <button class="ni active" onclick="goP('dash',this)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -548,7 +648,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       Journal
     </button>
     <div class="fab-wrap">
-      <div class="fab" onclick="goP('form',null)">
+      <div class="fab" onclick="toggleFabMenu()">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </div>
     </div>
@@ -556,11 +656,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       Factures
     </button>
-    <button class="ni" onclick="goP('stats',this)">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Stats
+    <button class="ni" onclick="goP('prets',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg>
+      Prêts
     </button>
-
   </nav>
 </div>
 
@@ -569,7 +668,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import{getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import{getFirestore,enableIndexedDbPersistence,collection,doc,addDoc,setDoc,getDoc,updateDoc,deleteDoc,onSnapshot,query,orderBy,where}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import{getFirestore,enableIndexedDbPersistence,collection,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,orderBy,where}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig={
   apiKey:"AIzaSyA0mNgqTnj9aAKaZkED_VxTdhrc4zohQJc",
@@ -584,7 +683,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 enableIndexedDbPersistence(db).catch(()=>{});
-window._fb={auth,db,doc,addDoc,setDoc,getDoc,updateDoc,deleteDoc,collection,query,orderBy,where,onSnapshot,signOut,GoogleAuthProvider,signInWithPopup,onAuthStateChanged};
+window._fb={auth,db,doc,addDoc,setDoc,getDoc,getDocs,updateDoc,deleteDoc,collection,query,orderBy,where,onSnapshot,signOut,GoogleAuthProvider,signInWithPopup,onAuthStateChanged};
 
 // Init auth dans le module — Firebase est garanti prêt ici
 onAuthStateChanged(auth,user=>{
@@ -600,6 +699,7 @@ onAuthStateChanged(auth,user=>{
     document.getElementById('auth').style.display='none';
     document.getElementById('app').style.display='flex';
     if(typeof subscribe==='function'){subscribe();setTimeout(()=>{if(typeof renderProfil==='function')renderProfil();},500);}
+    if(typeof window.subscribePrets==='function')window.subscribePrets();
     if(typeof resetLockTimer==='function')resetLockTimer();
   } else {
     window._uid=null;
@@ -652,12 +752,381 @@ function goP(p,btn){
   else if(p==='stats')renderStats();
   else if(p==='profil')renderProfil();
   else if(p==='form')initForm();
+  else if(p==='prets')renderPrets();
   window._curPage=p;
 }
 function goBack(){
   goP('dash',document.querySelector('.ni'));
 }
 window.goP=goP;window.goBack=goBack;
+
+// ── FAB MENU
+function toggleFabMenu(){
+  const ov=document.getElementById('fab-menu-overlay');
+  const pp=document.getElementById('fab-menu-popup');
+  const hidden=ov.hidden;
+  ov.hidden=!hidden;pp.hidden=!hidden;
+}
+function closeFabMenu(){
+  document.getElementById('fab-menu-overlay').hidden=true;
+  document.getElementById('fab-menu-popup').hidden=true;
+}
+function setOpType(t){
+  // appelé après goP('form') — met le toggle Entrée/Sortie sur t
+  // les boutons ont les ids btn-entree / btn-sortie
+  const btnE=document.getElementById('btn-entree');
+  const btnS=document.getElementById('btn-sortie');
+  if(!btnE||!btnS)return;
+  if(t==='entree'){
+    btnE.className='type-btn in active';
+    btnS.className='type-btn out';
+  } else {
+    btnE.className='type-btn in';
+    btnS.className='type-btn out active';
+  }
+  opType=t;
+}
+window.toggleFabMenu=toggleFabMenu;window.closeFabMenu=closeFabMenu;
+
+// ── ÉTAT PRÊTS
+let prets=[],pretFilter='all',unsubPrets=null;
+
+// ── FIRESTORE PRÊTS
+function subscribePrets(){
+  const _uid=window._uid||uid;
+  if(!_uid)return;
+  uid=_uid; // sync local uid
+  const{db,collection,query,orderBy,onSnapshot}=window._fb;
+  if(unsubPrets)unsubPrets();
+  unsubPrets=onSnapshot(
+    query(collection(db,'users/'+_uid+'/prets'),orderBy('ts','desc')),
+    snap=>{prets=snap.docs.map(d=>({id:d.id,...d.data()}));if(window._curPage==='prets')renderPrets();}
+  );
+}
+window.subscribePrets=subscribePrets;
+
+// ── RENDU PRÊTS
+let pretFilterActive='all';
+function setPretFilter(f,el){
+  pretFilterActive=f;
+  document.querySelectorAll('.pret-ftabs .ftab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  renderPrets();
+}
+window.setPretFilter=setPretFilter;
+
+function initiales(nom){
+  const parts=nom.trim().split(/\s+/);
+  return(parts[0]?.[0]||'')+(parts[1]?.[0]||'');
+}
+const AV_COLORS=['#1B3A52','#1a6b44','#6b3a8a','#1a4a7a','#8a3a1a','#1a6b5a'];
+
+function renderPrets(){
+  // Stats
+  const total=prets.reduce((s,p)=>s+(p.montant||0),0);
+  const remb=prets.reduce((s,p)=>s+(p.rembourse||0),0);
+  const rest=total-remb;
+  const actifs=prets.filter(p=>p.statut!=='solde').length;
+  document.getElementById('ps-total').textContent=fmt(total)+' F';
+  document.getElementById('ps-remb').textContent=fmt(remb)+' F';
+  document.getElementById('ps-rest').textContent=fmt(rest)+' F';
+  document.getElementById('ps-actifs').textContent=actifs;
+
+  // Liste filtrée
+  let list=prets;
+  if(pretFilterActive!=='all')list=prets.filter(p=>p.statut===pretFilterActive);
+
+  const el=document.getElementById('prets-list');
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text3);font-size:13px">Aucun prêt enregistré</div>';
+    return;
+  }
+  el.innerHTML=list.map((p,i)=>{
+    const rp=p.rembourse||0,mt=p.montant||0,rs=mt-rp;
+    const pct=mt>0?Math.round(rp/mt*100):0;
+    const pgClass=p.statut==='solde'?'pg-good':p.statut==='retard'?'pg-warn':'';
+    const bdgClass=p.statut==='solde'?'pb-solde':p.statut==='retard'?'pb-retard':'pb-encours';
+    const bdgLabel=p.statut==='solde'?'Soldé':p.statut==='retard'?'En retard':'En cours';
+    const col=p.type==='perso'?'#8a3a1a':AV_COLORS[i%AV_COLORS.length];
+    const av=p.type==='perso'?'MB':initiales(p.beneficiaire||'??');
+    const selfClass=p.type==='perso'?' self-pret':'';
+    return `<div class="pret-card${selfClass}" onclick="openPretDetail('${p.id}')">
+      ${p.type==='perso'?'<div style="display:inline-flex;align-items:center;gap:5px;background:#e8f0fa;color:#1a4a7a;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;margin-bottom:8px">🏢 Avance personnelle — Caisse entreprise</div>':''}
+      <div class="pret-card-header">
+        <div class="pret-avatar" style="background:${col}">${av}</div>
+        <div class="pret-info">
+          <div class="pret-name">${p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—')}</div>
+          <div class="pret-meta">Prêt du ${p.date?new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):''}</div>
+        </div>
+        <span class="pret-badge ${bdgClass}">${bdgLabel}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:10px;color:var(--text3)">${fmt(rp)} F / ${fmt(mt)} F</span>
+        <span style="font-size:10px;font-weight:700;color:var(--orange)">${pct}%</span>
+      </div>
+      <div class="pret-prog-track"><div class="pret-prog-fill ${pgClass}" style="width:${pct}%"></div></div>
+      <div class="pret-amounts">
+        <div class="pret-amt-col"><div class="pret-amt-lbl">Prêté</div><div class="pret-amt-val">${fmt(mt)} F</div></div>
+        <div class="pret-amt-col"><div class="pret-amt-lbl">Remboursé</div><div class="pret-amt-val green">${fmt(rp)} F</div></div>
+        <div class="pret-amt-col"><div class="pret-amt-lbl">Restant</div><div class="pret-amt-val orange">${fmt(rs)} F</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DÉTAIL PRÊT
+let _pretDetailId=null;
+async function openPretDetail(id){
+  _pretDetailId=id;
+  const p=prets.find(x=>x.id===id);
+  if(!p)return;
+  const rp=p.rembourse||0,mt=p.montant||0,rs=mt-rp;
+  const bdgClass=p.statut==='solde'?'pb-solde':p.statut==='retard'?'pb-retard':'pb-encours';
+  const bdgLabel=p.statut==='solde'?'Soldé':p.statut==='retard'?'En retard':'En cours';
+  const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—');
+  const av=p.type==='perso'?'MB':initiales(nom);
+
+  // Charger remboursements
+  const{db,collection,query,orderBy,onSnapshot,getDocs}=window._fb;
+  let rembs=[];
+  try{
+    const _uid=window._uid||uid;
+    const snap=await window._fb.getDocs(query(collection(db,'users/'+_uid+'/prets/'+id+'/remboursements'),orderBy('ts','asc')));
+    rembs=snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){}
+
+  const tlHtml=rembs.length
+    ? rembs.map(r=>`<div class="tl-item">
+        <div class="tl-dot paid"></div>
+        <div class="tl-row"><span class="tl-desc">Remboursement</span><span class="tl-amt">+${fmt(r.montant)} F</span></div>
+        <div class="tl-date">${r.date?new Date(r.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):''} ${r.note?'— '+r.note:''}</div>
+      </div>`).join('')
+    : '<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucun remboursement enregistré</div>';
+
+  const html=`<div class="bottom-panel" id="pret-detail-panel" onclick="e=>{if(e.target===this)closePretDetail()}">
+    <div class="bottom-panel-inner">
+      <div class="bp-handle"></div>
+      <div class="bp-body">
+        <div class="bp-header">
+          <div class="bp-avatar">${av}</div>
+          <div>
+            <div class="bp-name">${nom}</div>
+            <div class="bp-date">Prêt du ${p.date?new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
+            <span class="pret-badge ${bdgClass}" style="margin-top:4px;display:inline-block">${bdgLabel}</span>
+          </div>
+          <button class="bp-close" onclick="closePretDetail()">✕</button>
+        </div>
+        <div class="bp-big-stats">
+          <div class="bp-bs"><div class="bp-bs-lbl">Prêté</div><div class="bp-bs-val">${fmt(mt)} F</div></div>
+          <div class="bp-bs"><div class="bp-bs-lbl">Remboursé</div><div class="bp-bs-val" style="color:var(--green)">${fmt(rp)} F</div></div>
+          <div class="bp-bs"><div class="bp-bs-lbl">Restant</div><div class="bp-bs-val" style="color:var(--orange)">${fmt(rs)} F</div></div>
+        </div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px">Historique</div>
+        <div>${tlHtml}</div>
+        ${p.statut!=='solde'?`<button class="btn-remb" onclick="closePretDetail();openRembForm('${id}')">Enregistrer un remboursement</button>`:''}
+        <div style="height:8px"></div>
+      </div>
+    </div>
+  </div>`;
+  const div=document.createElement('div');
+  div.innerHTML=html;
+  document.body.appendChild(div.firstChild);
+}
+function closePretDetail(){
+  const el=document.getElementById('pret-detail-panel');
+  if(el)el.remove();
+}
+window.openPretDetail=openPretDetail;window.closePretDetail=closePretDetail;
+
+// ── FORMULAIRE REMBOURSEMENT
+let _rembPretId=null;
+function openRembForm(id){
+  _rembPretId=id;
+  const p=prets.find(x=>x.id===id);
+  if(!p)return;
+  const rs=(p.montant||0)-(p.rembourse||0);
+  const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—');
+  const today=new Date().toISOString().split('T')[0];
+  const html=`<div class="bottom-panel" id="remb-panel">
+    <div class="bottom-panel-inner">
+      <div class="bp-handle"></div>
+      <div class="bp-body">
+        <div style="font-size:16px;font-weight:700;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--border)">
+          Remboursement — ${nom}
+        </div>
+        <div class="remb-rest-chip">
+          <span class="remb-rest-lbl">Restant dû</span>
+          <span class="remb-rest-val">${fmt(rs)} F</span>
+        </div>
+        <div class="solde-toggle-row">
+          <input type="checkbox" id="remb-solde-toggle" onchange="toggleSoldeRemb(this,${rs})" style="width:18px;height:18px;accent-color:var(--green);cursor:pointer">
+          <label class="solde-toggle-lbl" for="remb-solde-toggle">Solder entièrement le prêt</label>
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Montant remboursé (FCFA)</div>
+          <input class="finp" type="text" id="remb-montant" inputmode="decimal" placeholder="0" oninput="fmtAmt(this)">
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Date du remboursement</div>
+          <input class="finp" type="date" id="remb-date" value="${today}">
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Note (optionnel)</div>
+          <input class="finp" type="text" id="remb-note" placeholder="Ex: Orange Money, espèces…">
+        </div>
+        <button class="btn-save" onclick="submitRemb()">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Confirmer le remboursement
+        </button>
+        <button onclick="closeRembForm()" style="width:100%;background:none;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:8px;font-family:var(--font)">Annuler</button>
+        <div style="height:8px"></div>
+      </div>
+    </div>
+  </div>`;
+  const div=document.createElement('div');
+  div.innerHTML=html;
+  document.body.appendChild(div.firstChild);
+}
+function toggleSoldeRemb(cb,restant){
+  const inp=document.getElementById('remb-montant');
+  if(cb.checked){
+    inp.value=restant.toLocaleString('fr-FR');
+    inp.dataset.raw=String(restant);
+    inp.disabled=true;
+  } else {
+    inp.value='';inp.dataset.raw='0';inp.disabled=false;
+  }
+}
+function closeRembForm(){
+  const el=document.getElementById('remb-panel');if(el)el.remove();
+}
+async function submitRemb(){
+  const montant=parseAmt(document.getElementById('remb-montant'));
+  const date=document.getElementById('remb-date').value;
+  const note=document.getElementById('remb-note').value.trim();
+  if(!montant){toast('Saisir un montant');return;}
+  const p=prets.find(x=>x.id===_rembPretId);
+  if(!p)return;
+  const{db,collection,doc,addDoc,updateDoc}=window._fb;
+  const _uid=window._uid||uid;
+  try{
+    const newRemb=(p.rembourse||0)+montant;
+    const isSolde=newRemb>=(p.montant||0);
+    // 1. Sous-collection remboursements
+    await addDoc(collection(db,'users/'+_uid+'/prets/'+_rembPretId+'/remboursements'),{
+      montant,date,note,ts:Date.now()
+    });
+    // 2. Mettre à jour le prêt
+    await updateDoc(doc(db,'users/'+_uid+'/prets',_rembPretId),{
+      rembourse:newRemb,
+      statut:isSolde?'solde':'encours',
+      dateSolde:isSolde?date:null
+    });
+    // 3. Entrée dans le journal
+    const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'');
+    const libelle=isSolde?'Solde total prêt — '+nom:'Remboursement prêt — '+nom;
+    await addDoc(collection(db,'users/'+_uid+'/operations'),{
+      type:'entree',montant,date,libelle,
+      categorie:'Remboursements reçus',cat:'remb',
+      note:'Remboursement prêt #'+_rembPretId+(note?' — '+note:''),
+      ts:Date.now()
+    });
+    closeRembForm();
+    toast('✅ Remboursement enregistré dans le journal');
+  }catch(e){toast('Erreur: '+e.message);}
+}
+window.openRembForm=openRembForm;window.closeRembForm=closeRembForm;
+window.toggleSoldeRemb=toggleSoldeRemb;window.submitRemb=submitRemb;
+
+// ── FORMULAIRE NOUVEAU PRÊT
+let _pretFormType='tiers';
+function openPretForm(){
+  _pretFormType='tiers';
+  const today=new Date().toISOString().split('T')[0];
+  const html=`<div class="bottom-panel" id="pret-form-panel">
+    <div class="bottom-panel-inner">
+      <div class="bp-handle"></div>
+      <div class="bp-body">
+        <div style="font-size:16px;font-weight:700;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--border)">Nouveau prêt / avance</div>
+        <div class="fgrp">
+          <div class="flbl">Type</div>
+          <div class="pret-type-row">
+            <button class="pret-type-btn active" id="pt-tiers" onclick="selectPretType('tiers')">👤 Prêt tiers</button>
+            <button class="pret-type-btn" id="pt-perso" onclick="selectPretType('perso')">🏢 Avance perso</button>
+          </div>
+        </div>
+        <div class="fgrp" id="pt-benef-grp">
+          <div class="flbl">Bénéficiaire</div>
+          <input class="finp" type="text" id="pt-benef" placeholder="Nom ou raison sociale">
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Montant (FCFA)</div>
+          <input class="finp" type="text" id="pt-montant" inputmode="decimal" placeholder="0" oninput="fmtAmt(this)">
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Date du prêt</div>
+          <input class="finp" type="date" id="pt-date" value="${today}">
+        </div>
+        <div class="fgrp">
+          <div class="flbl">Motif (optionnel)</div>
+          <input class="finp" type="text" id="pt-motif" placeholder="Ex: besoin urgent, frais chantier…">
+        </div>
+        <button class="btn-save" onclick="savePret()">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Enregistrer dans la caisse
+        </button>
+        <button onclick="closePretForm()" style="width:100%;background:none;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:8px;font-family:var(--font)">Annuler</button>
+        <div style="height:8px"></div>
+      </div>
+    </div>
+  </div>`;
+  const div=document.createElement('div');
+  div.innerHTML=html;
+  document.body.appendChild(div.firstChild);
+}
+function selectPretType(t){
+  _pretFormType=t;
+  document.getElementById('pt-tiers').classList.toggle('active',t==='tiers');
+  document.getElementById('pt-perso').classList.toggle('active',t==='perso');
+  document.getElementById('pt-benef-grp').hidden=(t==='perso');
+}
+function closePretForm(){
+  const el=document.getElementById('pret-form-panel');if(el)el.remove();
+}
+async function savePret(){
+  const montant=parseAmt(document.getElementById('pt-montant'));
+  const date=document.getElementById('pt-date').value;
+  const benef=_pretFormType==='perso'?'perso':(document.getElementById('pt-benef').value.trim());
+  const motif=document.getElementById('pt-motif').value.trim();
+  if(!montant){toast('Saisir un montant');return;}
+  if(_pretFormType==='tiers'&&!benef){toast('Saisir un bénéficiaire');return;}
+  const{db,collection,addDoc}=window._fb;
+  const _uid=window._uid||uid;
+  try{
+    // 1. Créer le prêt dans Firestore
+    await addDoc(collection(db,'users/'+_uid+'/prets'),{
+      type:_pretFormType,
+      beneficiaire:_pretFormType==='perso'?'M. Bengue':benef,
+      montant,date,motif,
+      rembourse:0,statut:'encours',
+      ts:Date.now()
+    });
+    // 2. Sortie dans le journal
+    const nom=_pretFormType==='perso'?'M. Bengue — Avance perso':benef;
+    await addDoc(collection(db,'users/'+_uid+'/operations'),{
+      type:'sortie',montant,date,
+      libelle:'Prêt accordé — '+nom,
+      categorie:'Prêts et avances accordés',cat:'pret',
+      note:motif,ts:Date.now()
+    });
+    closePretForm();
+    toast('✅ Prêt enregistré');
+    // Aller sur la page Prêts
+    goP('prets',document.querySelectorAll('.ni')[3]);
+  }catch(e){toast('Erreur: '+e.message);}
+}
+window.openPretForm=openPretForm;window.closePretForm=closePretForm;
+window.selectPretType=selectPretType;window.savePret=savePret;
 
 // ── AUTH
 function signInGoogle(){
