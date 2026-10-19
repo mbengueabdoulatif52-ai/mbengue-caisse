@@ -1271,7 +1271,9 @@ function subscribe(){
   const{db,collection,query,orderBy,onSnapshot,doc,getDoc}=window._fb;
   unsubscribe();
   unsub1=onSnapshot(query(collection(db,'users/'+uid+'/operations'),orderBy('ts','desc')),snap=>{
-    ops=snap.docs.map(d=>({id:d.id,...d.data()}));
+    // ts peut être une date ISO (texte) ou un nombre (anciennes écritures) : on trie sur une valeur commune
+    const tsNum=o=>typeof o.ts==='number'?o.ts:(Date.parse(o.ts)||0);
+    ops=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>tsNum(b)-tsNum(a));
     renderCurrent();
   });
   unsub2=onSnapshot(query(collection(db,'users/'+uid+'/factures'),orderBy('ts','desc')),snap=>{
@@ -2632,6 +2634,12 @@ function exportExcel(){
   const scope=exportScope();
   const t=scope.list;
   if(!t.length){toast('Aucune opération à exporter');return;}
+  // Date 'AAAA-MM-JJ' → numéro de jour Excel (aucune heure, aucun fuseau horaire)
+  const xlDate=d=>{
+    const p=(d||'').split('-').map(Number);
+    if(p.length!==3||!p[0])return null;
+    return{v:(Date.UTC(p[0],p[1]-1,p[2])-Date.UTC(1899,11,30))/86400000,t:'n',z:'dd/mm/yyyy'};
+  };
   const wb=XLSX.utils.book_new();
   const totalE=t.filter(o=>o.type==='entree').reduce((s,o)=>s+o.montant,0);
   const totalS=t.filter(o=>o.type==='sortie').reduce((s,o)=>s+o.montant,0);
@@ -2662,7 +2670,7 @@ function exportExcel(){
     ['','','','','','','','','',''],
     ['Date',"Nature de l'opération",'Client / Fournisseur','Type','Catégorie','Entrée (FCFA)','Sortie (FCFA)','Mode de paiement','N° Facture','Solde (FCFA)'],
     ...t.map((o,i)=>[
-      o.date?new Date(o.date+' 00:00:00'):null,
+      xlDate(o.date),
       o.description||'',
       o.client||'',
       o.type==='entree'?'Entrée':'Sortie',
