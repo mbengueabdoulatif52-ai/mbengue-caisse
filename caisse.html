@@ -58,16 +58,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 
 /* NAVBAR */
 .navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surf);border-top:0.5px solid var(--border);display:flex;justify-content:space-around;align-items:center;padding:8px 0 14px;z-index:50;box-sizing:border-box}
-.ni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:9px;color:var(--text3);cursor:pointer;padding:4px 0;border:none;background:transparent;font-family:var(--font);transition:.15s;flex:1;text-align:center}
+.ni{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:8.5px;color:var(--text3);cursor:pointer;padding:4px 0;border:none;background:transparent;font-family:var(--font);transition:.15s;flex:1;text-align:center;min-width:0}
 .ni.active{color:var(--orange)}
-.ni svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.ni svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8}
 .ni-dot{width:4px;height:4px;border-radius:50%;background:var(--orange);margin-top:1px}
 .fab-wrap{margin-top:-18px;display:flex;align-items:center;justify-content:center;flex:1}
 .fab{width:50px;height:50px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center;border:3px solid var(--bg);cursor:pointer;box-shadow:0 2px 12px rgba(232,118,26,.4)}
 .fab svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.5}
 /* FAB MENU */
-.fab-menu-overlay{position:fixed;inset:0;z-index:48;background:rgba(0,0,0,.35)}
-.fab-menu-popup{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:49;display:flex;flex-direction:column;align-items:center;gap:10px;width:220px}
+.fab-menu-overlay{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.35)}
+.fab-menu-popup{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:56;display:flex;flex-direction:column;align-items:center;gap:10px;width:220px}
+.fab.open svg{transform:rotate(45deg);transition:transform .2s}
 .fab-menu-item{width:100%;background:var(--surf);border:0.5px solid var(--border);border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:600;color:var(--text);box-shadow:0 4px 16px rgba(0,0,0,.12);transition:.12s;font-family:var(--font)}
 .fab-menu-item:active{opacity:.85}
 .fab-menu-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0}
@@ -656,6 +657,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
       Factures
     </button>
+    <button class="ni" onclick="goP('stats',this)">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Stats
+    </button>
     <button class="ni" onclick="goP('prets',this)">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg>
       Prêts
@@ -690,7 +695,7 @@ onAuthStateChanged(auth,user=>{
   document.getElementById('loading').style.display='none';
   if(user){
     window._uid=user.uid;
-    if(typeof uid!=='undefined')uid=user.uid;
+    window.uid=user.uid; // met à jour var uid dans le script non-module (var global = window property)
     // Si session non accordée (pas passé par index.html), on renvoie là-bas pour le PIN
     if(typeof hasPin==='function'&&hasPin()&&!sessionOK()){
       window.location.replace('index.html');
@@ -702,7 +707,7 @@ onAuthStateChanged(auth,user=>{
     if(typeof window.subscribePrets==='function')window.subscribePrets();
     if(typeof resetLockTimer==='function')resetLockTimer();
   } else {
-    window._uid=null;
+    window._uid=null;window.uid=null;
     document.getElementById('auth').style.display='flex';
     document.getElementById('app').style.display='none';
     if(typeof unsubscribe==='function')unsubscribe();
@@ -712,7 +717,7 @@ onAuthStateChanged(auth,user=>{
 
 <script>
 // ── ÉTAT
-let uid=null,ops=[],factures=[],unsub1=null,unsub2=null;
+var uid=null,ops=[],factures=[],unsub1=null,unsub2=null;
 let curYear=new Date().getFullYear(),curMonth=new Date().getMonth()+1;
 let journalFilter='all',factFilter='all',customCatsEntree=[],customCatsSortie=[];
 let opType='entree',payMode='Wave',avanceOn=false;
@@ -764,12 +769,16 @@ window.goP=goP;window.goBack=goBack;
 function toggleFabMenu(){
   const ov=document.getElementById('fab-menu-overlay');
   const pp=document.getElementById('fab-menu-popup');
+  const fab=document.querySelector('.fab');
   const hidden=ov.hidden;
   ov.hidden=!hidden;pp.hidden=!hidden;
+  if(fab)fab.classList.toggle('open',!hidden);
 }
 function closeFabMenu(){
   document.getElementById('fab-menu-overlay').hidden=true;
   document.getElementById('fab-menu-popup').hidden=true;
+  const fab=document.querySelector('.fab');
+  if(fab)fab.classList.remove('open');
 }
 function setOpType(t){
   // appelé après goP('form') — met le toggle Entrée/Sortie sur t
@@ -1122,7 +1131,7 @@ async function savePret(){
     closePretForm();
     toast('✅ Prêt enregistré');
     // Aller sur la page Prêts
-    goP('prets',document.querySelectorAll('.ni')[3]);
+    goP('prets',document.querySelectorAll('.ni')[4]);
   }catch(e){toast('Erreur: '+e.message);}
 }
 window.openPretForm=openPretForm;window.closePretForm=closePretForm;
