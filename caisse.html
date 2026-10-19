@@ -112,6 +112,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .bp-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
 .bp-avatar{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#fff;background:var(--navy);flex-shrink:0}
 .bp-name{font-size:16px;font-weight:700}.bp-date{font-size:11px;color:var(--text3);margin-top:2px}
+.bp-act{width:28px;height:28px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.bp-act svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.bp-act-edit{background:#e8f0fa;color:var(--navy)}.bp-act-del{background:#fff0f0;color:#c0392b}
+.pret-del-box{background:#fff0f0;border-radius:12px;padding:12px;margin-bottom:12px;color:#1a1f26}
+.pret-del-box h3{font-size:14px;color:#c0392b;margin-bottom:6px}
+.pret-del-box p,.pret-del-box li{font-size:12px;line-height:1.55}
+.pret-del-box ul{margin:6px 0 0 16px}
+.pret-del-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.pret-del-btns button{border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)}
 .bp-close{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--border);border:none;cursor:pointer;font-size:16px;color:var(--text3);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .bp-big-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
 .bp-bs{background:var(--surf2);border-radius:10px;padding:10px;text-align:center;border:0.5px solid var(--border)}
@@ -924,8 +933,13 @@ async function openPretDetail(id){
             <div class="bp-date">Prêt du ${p.date?new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
             <span class="pret-badge ${bdgClass}" style="margin-top:4px;display:inline-block">${bdgLabel}</span>
           </div>
-          <button class="bp-close" onclick="closePretDetail()">✕</button>
+          <div style="margin-left:auto;display:flex;gap:6px;flex-shrink:0">
+            <button class="bp-act bp-act-edit" title="Modifier" onclick="closePretDetail();openPretForm('${id}')"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button>
+            <button class="bp-act bp-act-del" title="Supprimer" onclick="askDeletePret('${id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>
+            <button class="bp-close" style="margin-left:0" onclick="closePretDetail()">✕</button>
+          </div>
         </div>
+        <div id="pret-del-confirm" hidden></div>
         <div class="bp-big-stats">
           <div class="bp-bs"><div class="bp-bs-lbl">Prêté</div><div class="bp-bs-val">${fmt(mt)} F</div></div>
           <div class="bp-bs"><div class="bp-bs-lbl">Remboursé</div><div class="bp-bs-val" style="color:var(--green)">${fmt(rp)} F</div></div>
@@ -947,6 +961,57 @@ function closePretDetail(){
   if(el)el.remove();
 }
 window.openPretDetail=openPretDetail;window.closePretDetail=closePretDetail;
+
+// ── SUPPRESSION PRÊT
+function askDeletePret(id){
+  const p=prets.find(x=>x.id===id);
+  const box=document.getElementById('pret-del-confirm');
+  if(!p||!box)return;
+  if(!box.hidden){box.hidden=true;return;}
+  const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—');
+  const linked=ops.filter(o=>o.pretId===id);
+  const nS=linked.filter(o=>o.type==='sortie').length;
+  const rembs=linked.filter(o=>o.type==='entree');
+  const totR=rembs.reduce((s,o)=>s+(o.montant||0),0);
+  const items=['la fiche du prêt et son historique'];
+  if(nS)items.push('la sortie « Prêt accordé » du journal');
+  if(rembs.length)items.push(rembs.length+' remboursement'+(rembs.length>1?'s':'')+' du journal ('+fmt(totR)+' F)');
+  if(!linked.length)items.push('aucune écriture liée trouvée dans le journal : si ce prêt y figure, supprime la ligne à la main');
+  box.innerHTML=`<div class="pret-del-box">
+    <h3>Supprimer ce prêt ?</h3>
+    <p>${nom} — ${fmt(p.montant||0)} F</p>
+    <ul>${items.map(t=>'<li>'+t+'</li>').join('')}</ul>
+    <p style="margin-top:6px;font-weight:600">Cette action est définitive.</p>
+    <div class="pret-del-btns">
+      <button style="background:#fff;color:#1a1f26;border:0.5px solid #e2e5ea" onclick="document.getElementById('pret-del-confirm').hidden=true">Annuler</button>
+      <button id="pret-del-go" style="background:#c0392b;color:#fff" onclick="deletePret('${id}')">Supprimer</button>
+    </div>
+  </div>`;
+  box.hidden=false;
+}
+async function deletePret(id){
+  const{db,collection,doc,getDocs,deleteDoc}=window._fb;
+  const _uid=window._uid||uid;
+  const btn=document.getElementById('pret-del-go');
+  if(btn){btn.disabled=true;btn.textContent='Suppression…';}
+  try{
+    // 1. Écritures liées dans le journal
+    for(const o of ops.filter(o=>o.pretId===id)){
+      await deleteDoc(doc(db,'users/'+_uid+'/operations/'+o.id));
+    }
+    // 2. Sous-collection remboursements
+    const snap=await getDocs(collection(db,'users/'+_uid+'/prets/'+id+'/remboursements'));
+    for(const d of snap.docs){await deleteDoc(d.ref);}
+    // 3. Le prêt
+    await deleteDoc(doc(db,'users/'+_uid+'/prets',id));
+    closePretDetail();
+    toast('🗑 Prêt supprimé');
+  }catch(e){
+    toast('Erreur: '+e.message);
+    if(btn){btn.disabled=false;btn.textContent='Supprimer';}
+  }
+}
+window.askDeletePret=askDeletePret;window.deletePret=deletePret;
 
 // ── FORMULAIRE REMBOURSEMENT
 let _rembPretId=null;
@@ -1023,7 +1088,7 @@ async function submitRemb(){
     const newRemb=(p.rembourse||0)+montant;
     const isSolde=newRemb>=(p.montant||0);
     // 1. Sous-collection remboursements
-    await addDoc(collection(db,'users/'+_uid+'/prets/'+_rembPretId+'/remboursements'),{
+    const rembRef=await addDoc(collection(db,'users/'+_uid+'/prets/'+_rembPretId+'/remboursements'),{
       montant,date,note,ts:Date.now()
     });
     // 2. Mettre à jour le prêt
@@ -1040,7 +1105,7 @@ async function submitRemb(){
       categorie:'Remboursements reçus',
       description:(isSolde?'Solde total prêt':'Remboursement prêt')+(note?' — '+note:''),
       client:nom,tel:'',date,modePaiement:'',
-      ts:new Date().toISOString(),numFacture:'',source:'pret'
+      ts:new Date().toISOString(),numFacture:'',source:'pret',pretId:_rembPretId,rembId:rembRef.id
     });
     closeRembForm();
     toast('✅ Remboursement enregistré dans le journal');
@@ -1050,15 +1115,18 @@ window.openRembForm=openRembForm;window.closeRembForm=closeRembForm;
 window.toggleSoldeRemb=toggleSoldeRemb;window.submitRemb=submitRemb;
 
 // ── FORMULAIRE NOUVEAU PRÊT
-let _pretFormType='tiers';
-function openPretForm(){
-  _pretFormType='tiers';
+let _pretFormType='tiers',_pretEditId=null;
+function openPretForm(editId){
+  _pretEditId=(typeof editId==='string')?editId:null;
+  const ed=_pretEditId?prets.find(x=>x.id===_pretEditId):null;
+  if(_pretEditId&&!ed)return;
+  _pretFormType=ed?(ed.type||'tiers'):'tiers';
   const today=new Date().toISOString().split('T')[0];
   const html=`<div class="bottom-panel" id="pret-form-panel">
     <div class="bottom-panel-inner">
       <div class="bp-handle"></div>
       <div class="bp-body">
-        <div style="font-size:16px;font-weight:700;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--border)">Nouveau prêt / avance</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--border)">${ed?'Modifier le prêt':'Nouveau prêt / avance'}</div>
         <div class="fgrp">
           <div class="flbl">Type</div>
           <div class="pret-type-row">
@@ -1082,9 +1150,10 @@ function openPretForm(){
           <div class="flbl">Motif (optionnel)</div>
           <input class="finp" type="text" id="pt-motif" placeholder="Ex: besoin urgent, frais chantier…">
         </div>
+        ${ed?`<div style="font-size:11px;line-height:1.45;color:var(--text3);background:var(--surf2);border-radius:10px;padding:9px 11px;border-left:3px solid var(--orange);margin-bottom:4px">La sortie correspondante dans le journal sera mise à jour avec le nouveau montant et la nouvelle date.</div>`:''}
         <button class="btn-save" onclick="savePret()">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
-          Enregistrer dans la caisse
+          ${ed?'Enregistrer les modifications':'Enregistrer dans la caisse'}
         </button>
         <button onclick="closePretForm()" style="width:100%;background:none;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:8px;font-family:var(--font)">Annuler</button>
         <div style="height:8px"></div>
@@ -1094,6 +1163,14 @@ function openPretForm(){
   const div=document.createElement('div');
   div.innerHTML=html;
   document.body.appendChild(div.firstChild);
+  if(ed){
+    selectPretType(_pretFormType);
+    if(ed.type!=='perso')document.getElementById('pt-benef').value=ed.beneficiaire||'';
+    const m=document.getElementById('pt-montant');
+    m.value=fmt(ed.montant||0);m.dataset.raw=String(ed.montant||0);
+    document.getElementById('pt-date').value=ed.date||today;
+    document.getElementById('pt-motif').value=ed.motif||'';
+  }
 }
 function selectPretType(t){
   _pretFormType=t;
@@ -1111,25 +1188,52 @@ async function savePret(){
   const motif=document.getElementById('pt-motif').value.trim();
   if(!montant){toast('Saisir un montant');return;}
   if(_pretFormType==='tiers'&&!benef){toast('Saisir un bénéficiaire');return;}
-  const{db,collection,addDoc}=window._fb;
+  const{db,collection,addDoc,doc,updateDoc}=window._fb;
   const _uid=window._uid||uid;
+  const nom=_pretFormType==='perso'?'M. Bengue — Avance perso':benef;
+  const descr=(_pretFormType==='perso'?'Avance perso':'Prêt accordé')+(motif?' — '+motif:'');
   try{
+    if(_pretEditId){
+      // ── MODIFICATION
+      const p=prets.find(x=>x.id===_pretEditId);
+      const rp=(p&&p.rembourse)||0;
+      const isSolde=rp>=montant;
+      await updateDoc(doc(db,'users/'+_uid+'/prets',_pretEditId),{
+        type:_pretFormType,
+        beneficiaire:_pretFormType==='perso'?'M. Bengue':benef,
+        montant,date,motif,
+        statut:isSolde?'solde':(p&&p.statut==='retard'?'retard':'encours'),
+        dateSolde:isSolde?((p&&p.dateSolde)||date):null
+      });
+      // Sortie liée dans le journal
+      const linked=ops.filter(o=>o.pretId===_pretEditId&&o.type==='sortie');
+      for(const o of linked){
+        await updateDoc(doc(db,'users/'+_uid+'/operations/'+o.id),{montant,date,description:descr,client:nom});
+      }
+      // Les remboursements liés gardent leur montant, seul le nom suit
+      for(const o of ops.filter(o=>o.pretId===_pretEditId&&o.type==='entree')){
+        await updateDoc(doc(db,'users/'+_uid+'/operations/'+o.id),{client:nom});
+      }
+      closePretForm();
+      toast(linked.length?'✅ Prêt et journal mis à jour':'✅ Prêt mis à jour (aucune écriture liée dans le journal)');
+      return;
+    }
+    // ── CRÉATION
     // 1. Créer le prêt dans Firestore
-    await addDoc(collection(db,'users/'+_uid+'/prets'),{
+    const ref=await addDoc(collection(db,'users/'+_uid+'/prets'),{
       type:_pretFormType,
       beneficiaire:_pretFormType==='perso'?'M. Bengue':benef,
       montant,date,motif,
       rembourse:0,statut:'encours',
       ts:Date.now()
     });
-    // 2. Sortie dans le journal
-    const nom=_pretFormType==='perso'?'M. Bengue — Avance perso':benef;
+    // 2. Sortie dans le journal, liée au prêt
     await addDoc(collection(db,'users/'+_uid+'/operations'),{
       montant,type:'sortie',
       categorie:'Prêts et avances accordés',
-      description:(_pretFormType==='perso'?'Avance perso':'Prêt accordé')+(motif?' — '+motif:''),
+      description:descr,
       client:nom,tel:'',date,modePaiement:'',
-      ts:new Date().toISOString(),numFacture:'',source:'pret'
+      ts:new Date().toISOString(),numFacture:'',source:'pret',pretId:ref.id
     });
     closePretForm();
     toast('✅ Prêt enregistré');
