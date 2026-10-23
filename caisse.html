@@ -115,6 +115,31 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
 .pret-chip{display:inline-block;font-size:9px;font-weight:700;padding:2px 7px;border-radius:6px;background:#e8f0fa;color:var(--navy);vertical-align:middle}
 .pret-lock{margin-top:14px;background:#e8f0fa;color:#1a1f26;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.5}
 .pret-lock strong{display:block;font-size:12px;margin-bottom:2px;color:var(--navy)}
+/* SALAIRE DU GÉRANT */
+.sal-card{background:var(--surf);border:0.5px solid var(--border);border-left:3px solid var(--orange);border-radius:var(--r);padding:12px 14px;margin:12px 14px 0}
+.sal-card.ok{border-left-color:#1a8c4e}
+.sal-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.sal-t{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+.sal-v{font-size:20px;font-weight:700;font-family:var(--mono);margin-top:2px}
+.sal-b{font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;white-space:nowrap}
+.sal-b.b-wait{background:#fff4ea;color:#b85a0c}.sal-b.b-ok{background:#e8f8ee;color:#1a8c4e}
+.sal-l{display:flex;justify-content:space-between;font-size:11px;padding:6px 0;border-top:0.5px solid var(--border)}
+.sal-l span{color:var(--text3)}.sal-l b{font-family:var(--mono)}
+.sal-warn{font-size:11px;line-height:1.45;background:#fff0f0;color:#c0392b;border-radius:9px;padding:8px 10px;margin-top:6px}
+.sal-split{border:1px solid var(--border);border-radius:12px;padding:10px;margin-bottom:8px}
+.sal-sh{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;font-weight:600}
+.sal-sh small{display:block;font-size:10px;color:var(--text3);font-weight:500;margin-top:2px}
+.finp.sal-in{width:120px;text-align:right;font-family:var(--mono);font-weight:700;margin:0;flex-shrink:0}
+.sal-mode{border:1px solid var(--border);background:var(--surf2);border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;margin-right:6px;font-family:var(--font)}
+.sal-mode.on{border-color:var(--navy);background:#eef3f7;color:var(--navy)}
+.sal-total{display:flex;justify-content:space-between;font-size:13px;font-weight:700;padding:8px 2px;border-top:1px dashed var(--border)}
+.sal-total b{font-family:var(--mono)}
+.sal-jr{font-size:11px;color:var(--text3);line-height:1.6;background:var(--surf2);border-radius:9px;padding:8px 10px}
+.sal-jr:empty{display:none}.sal-jr b{color:var(--text)}
+.sal-set .flbl{margin-top:4px}
+.sal-tg{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;padding:10px 0;cursor:pointer}
+.sal-tg input{width:20px;height:20px;accent-color:var(--orange);flex-shrink:0}
+.sal-note{font-size:10px;color:var(--text3);line-height:1.45;margin-top:4px}
 /* MIGRATION PRÊTS */
 .mig-banner{background:#fff4ea;border:1px solid var(--orange);border-radius:12px;padding:12px;margin:8px 14px 10px;color:#1a1f26}
 .mig-banner b{display:block;font-size:13px;margin-bottom:3px}
@@ -413,6 +438,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         </div>
       </div>
     </div>
+    <div id="dash-salaire"></div>
     <p class="sec-title">Dernières opérations</p>
     <div id="dash-ops"></div>
   </div>
@@ -632,6 +658,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
         </button>
       </div>
 
+      <!-- Salaire du gérant -->
+      <div class="card">
+        <div class="ct">Salaire du gérant</div>
+        <div class="sal-set">
+          <label class="sal-tg"><span>Salaire mensuel activé</span><input type="checkbox" id="sal-actif"></label>
+          <div class="flbl">Montant mensuel (FCFA)</div>
+          <input class="finp" type="text" id="sal-montant" inputmode="decimal" oninput="fmtAmt(this)">
+          <div class="flbl" style="margin-top:10px">Réserve minimum en caisse (FCFA)</div>
+          <input class="finp" type="text" id="sal-reserve" inputmode="decimal" oninput="fmtAmt(this)">
+          <div class="sal-note">Environ un mois de charges. Le versement en argent ne fait jamais descendre la caisse en dessous.</div>
+          <label class="sal-tg"><span>Reporter le salaire non versé au mois suivant</span><input type="checkbox" id="sal-report"></label>
+          <button class="btn-remb" style="margin-top:6px" onclick="saveSalaireCfg()">Enregistrer</button>
+          <div id="sal-hist" style="margin-top:12px"></div>
+        </div>
+      </div>
+
       <!-- Sécurité -->
       <div class="card">
         <div class="ct">Sécurité</div>
@@ -757,8 +799,8 @@ const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','
 
 // ── CATÉGORIES
 let CATS_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes'];
-let CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges'];
-const CAT_CSS={'Prestations architecturales':'cat-archi','Transport et véhicules':'cat-transport','Prêts et avances accordés':'cat-pret','Charges exploitation':'cat-charge','Remboursements reçus':'cat-remb','Déplacements':'cat-charge','Autres entrées':'cat-autre','Autres sorties':'cat-autre'};
+let CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Rémunération du gérant','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges'];
+const CAT_CSS={'Prestations architecturales':'cat-archi','Rémunération du gérant':'cat-charge','Transport et véhicules':'cat-transport','Prêts et avances accordés':'cat-pret','Charges exploitation':'cat-charge','Remboursements reçus':'cat-remb','Déplacements':'cat-charge','Autres entrées':'cat-autre','Autres sorties':'cat-autre'};
 
 // ── FORMAT
 const fmt=n=>Math.round(n||0).toLocaleString('fr-FR');
@@ -787,7 +829,7 @@ function goP(p,btn){
   else if(p==='journal')renderJournal();
   else if(p==='factures')renderFactures();
   else if(p==='stats')renderStats();
-  else if(p==='profil')renderProfil();
+  else if(p==='profil'){renderProfil();fillSalaireCfg();}
   else if(p==='form')initForm();
   else if(p==='prets')renderPrets();
   window._curPage=p;
@@ -1212,6 +1254,199 @@ async function applyMigration(){
 window.openMigration=openMigration;window.closeMigration=closeMigration;
 window.setMigChoice=setMigChoice;window.setMigType=setMigType;window.applyMigration=applyMigration;
 
+// ── SALAIRE DU GÉRANT
+const SAL_CAT='Rémunération du gérant';
+const SALAIRE_DEFAUT={actif:true,montant:50000,reserve:70000,report:true,debut:null};
+var salaireCfg=null; // chargé depuis users/{uid}/data/settings
+function realYM(){const d=new Date();return ym(d.getFullYear(),d.getMonth()+1);}
+function ymLabel(k){const p=k.split('-');return MOIS[parseInt(p[1],10)-1]+' '+p[0];}
+function nextYM(k){let[y,m]=k.split('-').map(Number);m++;if(m>12){m=1;y++;}return ym(y,m);}
+// Mois concernés (du début au mois réel en cours), avec ce qui est dû et déjà versé
+function salaireEtat(){
+  const c=salaireCfg;
+  if(!c||!c.actif||!c.montant)return null;
+  const cur=realYM(),debut=c.debut||cur;
+  const verse={};
+  for(const o of ops){
+    if(o.type==='sortie'&&o.categorie===SAL_CAT&&o.salaireMois)verse[o.salaireMois]=(verse[o.salaireMois]||0)+(o.montant||0);
+  }
+  const mois=[];
+  for(let k=debut;k<=cur;k=nextYM(k))mois.push({k,du:c.montant,verse:verse[k]||0});
+  mois.forEach(m=>m.reste=Math.max(0,m.du-m.verse));
+  const courant=mois[mois.length-1]||{k:cur,du:c.montant,verse:0,reste:c.montant};
+  const anciens=mois.slice(0,-1);
+  const report=c.report?anciens.reduce((s,m)=>s+m.reste,0):0;
+  // Mois à payer, du plus ancien au plus récent (les anciens seulement si le report est activé)
+  const aPayer=(c.report?mois:[courant]).filter(m=>m.reste>0);
+  return{cfg:c,mois,courant,report,reste:courant.reste+report,aPayer};
+}
+function avancePerso(){
+  // Fiche « Avance perso » encore ouverte, la plus chargée en premier
+  return prets.filter(p=>p.type==='perso'&&p.statut!=='solde')
+    .map(p=>({...p,restant:(p.montant||0)-(p.rembourse||0)}))
+    .filter(p=>p.restant>0).sort((a,b)=>b.restant-a.restant)[0]||null;
+}
+function renderSalaireCard(solde){
+  const el=document.getElementById('dash-salaire');
+  if(!el)return;
+  const e=salaireEtat();
+  if(!e){el.innerHTML='';return;}
+  const dispo=Math.max(0,solde-e.cfg.reserve);
+  const av=avancePerso();
+  const ok=e.reste<=0;
+  const versesCourant=e.courant.verse;
+  el.innerHTML=`<div class="sal-card${ok?' ok':''}">
+    <div class="sal-h">
+      <div><div class="sal-t">Ton salaire — ${ymLabel(e.courant.k).split(' ')[0]}</div><div class="sal-v">${fmt(e.cfg.montant)} F</div></div>
+      <span class="sal-b ${ok?'b-ok':'b-wait'}">${ok?'Versé ✓':(versesCourant>0?'Partiellement versé':'À verser')}</span>
+    </div>
+    <div class="sal-l"><span>Versé ce mois</span><b>${fmt(versesCourant)} F</b></div>
+    ${e.report>0?`<div class="sal-l"><span>Reporté des mois précédents</span><b style="color:#b85a0c">${fmt(e.report)} F</b></div>`:''}
+    ${!ok?`<div class="sal-l"><span>Disponible en argent</span><b>${fmt(Math.min(dispo,e.reste))} F</b></div>`:''}
+    ${!ok&&dispo<e.reste?`<div class="sal-warn">${dispo<=0?'Caisse trop basse':'Caisse un peu juste'} : il faut garder ${fmt(e.cfg.reserve)} F de réserve.${av?' Tu peux te payer en remboursant ton avance perso.':''}</div>`:''}
+    ${!ok?`<button class="btn-remb" style="background:var(--orange);margin-top:10px" onclick="openSalaire()">Verser le salaire${e.reste!==e.cfg.montant?' ('+fmt(e.reste)+' F)':''}</button>`:''}
+  </div>`;
+}
+function currentSolde(){
+  return ops.reduce((s,o)=>s+(o.type==='entree'?1:-1)*(o.montant||0),0);
+}
+function openSalaire(){
+  const e=salaireEtat();if(!e||e.reste<=0)return;
+  const dispo=Math.max(0,currentSolde()-e.cfg.reserve);
+  const av=avancePerso();
+  const argent=Math.min(dispo,e.reste);
+  const comp=av?Math.min(av.restant,e.reste-argent):0;
+  const html=`<div class="bottom-panel" id="sal-panel">
+    <div class="bottom-panel-inner"><div class="bp-handle"></div><div class="bp-body">
+      <div style="font-size:16px;font-weight:700">Verser le salaire${e.aPayer.length>1?'':' de '+ymLabel(e.courant.k).split(' ')[0].toLowerCase()}</div>
+      <div style="font-size:11px;color:var(--text3);margin:2px 0 12px">Restant à verser : ${fmt(e.reste)} F${e.aPayer.length>1?' ('+e.aPayer.map(m=>ymLabel(m.k).split(' ')[0].toLowerCase()).join(', ')+')':''}</div>
+      <div class="sal-split">
+        <div class="sal-sh"><div>💵 En argent<small>Max. ${fmt(Math.min(dispo,e.reste))} F avec la réserve de ${fmt(e.cfg.reserve)} F</small></div>
+          <input class="finp sal-in" type="text" inputmode="decimal" id="sal-argent" value="${argent?fmt(argent):''}" data-raw="${argent}" oninput="fmtAmt(this);salPreview()"></div>
+        <div class="pay-row" id="sal-mode" style="margin-top:8px">
+          <button class="sal-mode on" data-m="Wave" onclick="salMode(this)">Wave</button>
+          <button class="sal-mode" data-m="Espèces" onclick="salMode(this)">Espèces</button>
+        </div>
+      </div>
+      ${av?`<div class="sal-split">
+        <div class="sal-sh"><div>🏢 Rembourse mon avance perso<small>Tu dois encore ${fmt(av.restant)} F</small></div>
+          <input class="finp sal-in" type="text" inputmode="decimal" id="sal-comp" value="${comp?fmt(comp):''}" data-raw="${comp}" oninput="fmtAmt(this);salPreview()"></div>
+      </div>`:''}
+      <div class="sal-total"><span>Total versé</span><b id="sal-tot">0 F</b></div>
+      <div class="sal-jr" id="sal-jr"></div>
+      <div id="sal-err" style="font-size:12px;color:var(--red);margin-top:6px"></div>
+      <button class="btn-remb" id="sal-go" onclick="submitSalaire()">Enregistrer</button>
+      <button onclick="closeSalaire()" style="width:100%;background:none;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:13px;color:var(--text2);cursor:pointer;margin-top:8px;font-family:var(--font)">Annuler</button>
+    </div></div></div>`;
+  const div=document.createElement('div');div.innerHTML=html;document.body.appendChild(div.firstChild);
+  salPreview();
+}
+function closeSalaire(){document.getElementById('sal-panel')?.remove();}
+function salMode(b){document.querySelectorAll('#sal-mode .sal-mode').forEach(x=>x.classList.toggle('on',x===b));}
+function salValues(){
+  const e=salaireEtat(),av=avancePerso();
+  const dispo=Math.max(0,currentSolde()-e.cfg.reserve);
+  const a=parseAmt(document.getElementById('sal-argent'));
+  const cEl=document.getElementById('sal-comp');
+  const c=cEl?parseAmt(cEl):0;
+  let err='';
+  if(a>dispo)err='En argent : maximum '+fmt(dispo)+' F pour garder la réserve de '+fmt(e.cfg.reserve)+' F.';
+  else if(av&&c>av.restant)err='Ton avance perso ne fait que '+fmt(av.restant)+' F.';
+  else if(a+c>e.reste)err='Le total dépasse ce qui reste à verser ('+fmt(e.reste)+' F).';
+  else if(a+c<=0)err='Saisis un montant.';
+  return{e,av,a,c,err};
+}
+function salPreview(){
+  const{a,c,av,err}=salValues();
+  document.getElementById('sal-tot').textContent=fmt(a+c)+' F';
+  const L=[];
+  if(a+c>0)L.push(`<b>− ${fmt(a+c)} F</b> sortie « ${SAL_CAT} »`);
+  if(c>0)L.push(`<b>+ ${fmt(c)} F</b> entrée « Remboursement avance perso »`);
+  let fin='';
+  if(a+c>0)fin=`→ solde de la caisse : <b>${a>0?'− '+fmt(a)+' F':'inchangé'}</b>`+(c>0&&av?` · avance perso : reste <b>${fmt(av.restant-c)} F</b>`:'');
+  document.getElementById('sal-jr').innerHTML=L.length?'Dans le journal :<br>'+L.join('<br>')+'<br>'+fin:'';
+  document.getElementById('sal-err').textContent=(a+c>0)?err:'';
+  document.getElementById('sal-go').disabled=!!err;
+}
+async function submitSalaire(){
+  const{e,av,a,c,err}=salValues();
+  if(err){document.getElementById('sal-err').textContent=err;return;}
+  const{db,collection,doc,addDoc,updateDoc}=window._fb;
+  const _uid=window._uid||uid;
+  const go=document.getElementById('sal-go');go.disabled=true;go.textContent='Enregistrement…';
+  const mode=document.querySelector('#sal-mode .sal-mode.on')?.dataset.m||'Wave';
+  const today=new Date().toISOString().split('T')[0];
+  const nom='Abdou Latif MBENGUE';
+  // Répartit le paiement sur les mois dus, du plus ancien au plus récent : d'abord l'argent, puis la compensation
+  const parts=[];let resteA=a,resteC=c;
+  for(const m of e.aPayer){
+    let r=m.reste;
+    const pa=Math.min(r,resteA);if(pa>0){parts.push({k:m.k,montant:pa,comp:false});resteA-=pa;r-=pa;}
+    const pc=Math.min(r,resteC);if(pc>0){parts.push({k:m.k,montant:pc,comp:true});resteC-=pc;r-=pc;}
+  }
+  try{
+    let rembTotal=0;
+    for(const p of parts){
+      const ts=new Date().toISOString();
+      await addDoc(collection(db,'users/'+_uid+'/operations'),{
+        montant:p.montant,type:'sortie',categorie:SAL_CAT,
+        description:'Salaire '+ymLabel(p.k).toLowerCase()+(p.comp?' — remboursement avance perso':''),
+        client:nom,tel:'',date:today,modePaiement:p.comp?'Compensation':mode,
+        ts,numFacture:'',salaireMois:p.k
+      });
+      if(p.comp&&av){
+        const rr=await addDoc(collection(db,'users/'+_uid+'/prets/'+av.id+'/remboursements'),{
+          montant:p.montant,date:today,note:'Retenue sur salaire '+ymLabel(p.k).toLowerCase(),ts:Date.now()
+        });
+        await addDoc(collection(db,'users/'+_uid+'/operations'),{
+          montant:p.montant,type:'entree',categorie:'Remboursements reçus',
+          description:'Remboursement avance perso — retenue sur salaire '+ymLabel(p.k).toLowerCase(),
+          client:'M. Bengue — Avance perso',tel:'',date:today,modePaiement:'Compensation',
+          ts:new Date().toISOString(),numFacture:'',source:'pret',pretId:av.id,rembId:rr.id
+        });
+        rembTotal+=p.montant;
+      }
+    }
+    if(rembTotal&&av){
+      const rp=(av.rembourse||0)+rembTotal,solde=rp>=(av.montant||0);
+      await updateDoc(doc(db,'users/'+_uid+'/prets',av.id),{rembourse:rp,statut:solde?'solde':(av.statut==='retard'?'retard':'encours'),dateSolde:solde?today:null});
+    }
+    closeSalaire();
+    toast('✅ Salaire de '+fmt(a+c)+' F enregistré');
+  }catch(x){toast('Erreur: '+x.message);go.disabled=false;go.textContent='Réessayer';}
+}
+function fillSalaireCfg(){
+  const c=salaireCfg||{...SALAIRE_DEFAUT};
+  const set=(id,v)=>{const el=document.getElementById(id);if(el){el.value=v?fmt(v):'';el.dataset.raw=String(v||0);}};
+  const a=document.getElementById('sal-actif');if(!a)return;
+  a.checked=!!c.actif;document.getElementById('sal-report').checked=!!c.report;
+  set('sal-montant',c.montant);set('sal-reserve',c.reserve);
+  const e=salaireEtat();
+  document.getElementById('sal-hist').innerHTML=e?`<div class="ct" style="margin-bottom:2px">Historique</div>`+
+    e.mois.slice().reverse().map(m=>`<div class="sal-l"><span>${ymLabel(m.k)}</span><b style="color:${m.reste<=0?'var(--green)':'#b85a0c'}">${fmt(m.verse)} / ${fmt(m.du)} F</b></div>`).join(''):'';
+}
+async function saveSalaireCfg(){
+  const{db,doc,setDoc}=window._fb;
+  const _uid=window._uid||uid;
+  const prev=salaireCfg||{...SALAIRE_DEFAUT};
+  const actif=document.getElementById('sal-actif').checked;
+  const cfg={
+    actif,
+    montant:parseAmt(document.getElementById('sal-montant')),
+    reserve:parseAmt(document.getElementById('sal-reserve')),
+    report:document.getElementById('sal-report').checked,
+    // Réactiver après une pause redémarre au mois en cours, sans rattrapage
+    debut:(actif&&!prev.actif)?realYM():(prev.debut||realYM())
+  };
+  if(actif&&!cfg.montant){toast('Saisis le montant du salaire');return;}
+  try{
+    await setDoc(doc(db,'users/'+_uid+'/data/settings'),{salaire:cfg},{merge:true});
+    salaireCfg=cfg;fillSalaireCfg();toast('✅ Réglages du salaire enregistrés');
+  }catch(x){toast('Erreur: '+x.message);}
+}
+window.openSalaire=openSalaire;window.closeSalaire=closeSalaire;window.salMode=salMode;window.salPreview=salPreview;
+window.submitSalaire=submitSalaire;window.saveSalaireCfg=saveSalaireCfg;window.fillSalaireCfg=fillSalaireCfg;
+
 // ── FORMULAIRE REMBOURSEMENT
 let _rembPretId=null;
 function openRembForm(id){
@@ -1489,8 +1724,16 @@ function subscribe(){
       customCatsSortie=d.customCatsSortie||[];
       // Mettre à jour les listes
       CATS_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes',...customCatsEntree];
-      CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges',...customCatsSortie];
+      CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Rémunération du gérant','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges',...customCatsSortie];
     }
+    // Salaire du gérant : réglage enregistré, ou création au premier lancement (démarre ce mois-ci)
+    const sal=snap.exists()&&snap.data().salaire;
+    if(sal){salaireCfg={...SALAIRE_DEFAUT,...sal};}
+    else{
+      salaireCfg={...SALAIRE_DEFAUT,debut:realYM()};
+      window._fb.setDoc(doc(db,'users/'+uid+'/data/settings'),{salaire:salaireCfg},{merge:true}).catch(()=>{});
+    }
+    if(window._curPage==='dash'||!window._curPage)renderDash();
   }).catch(()=>{});
 }
 function unsubscribe(){if(unsub1)unsub1();if(unsub2)unsub2();}
@@ -1568,6 +1811,7 @@ function renderDash(){
   document.getElementById('dash-sorties').textContent=fmt(sorties)+' F';
   document.getElementById('dash-factures').textContent=nbFact;
   document.getElementById('dash-creances').textContent=fmt(creances)+' F';
+  renderSalaireCard(solde);
   // Dernières opérations — 8 plus récentes toutes périodes
   const el=document.getElementById('dash-ops');
   const recent=allOps.slice(0,8);
@@ -3149,7 +3393,7 @@ async function saveCustomCats(){
   },{merge:true});
   // Mettre à jour les listes globales
   CATS_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes',...customCatsEntree];
-  CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges',...customCatsSortie];
+  CATS_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Rémunération du gérant','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges',...customCatsSortie];
 }
 
 async function addCustomCat(type){
@@ -3188,7 +3432,7 @@ function renderCatsSection(){
   const el=document.getElementById('cats-section');
   if(!el||!uid)return;
   const BASE_ENTREE=['Études architecturales','Plans béton armé','Plans électricité','Plan plomberie','Devis quantitatif estimatif (DQE)','Suivi & supervision de chantier','Consultation / Expertise technique','Remboursements','Versement véhicule','Location véhicule','Vente véhicule','Autres recettes'];
-  const BASE_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges'];
+  const BASE_SORTIE=['Fournitures de bureau','Impression','Abonnement logiciel','Transport & carburant','Maintenance véhicule','Salaires & prestataires','Rémunération du gérant','Sous-traitance technique','Téléphone & internet','Frais bancaires & transferts','Charges administratives','Achat matériaux & équipements','Déplacements & hébergement','Autres charges'];
 
   const renderList=(cats,base,type)=>cats.map(cat=>{
     const isBase=base.includes(cat);
