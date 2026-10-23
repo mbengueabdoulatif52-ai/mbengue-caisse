@@ -965,7 +965,7 @@ window.deleteEntry=async function(id){
 const OBJ_PILLARS=["Structuration","Commercial et production","Finances de l'entreprise","Investissements et transport","Outils et applications","Formations"];
 const OBJ_SEED=[
 [1,0,"Définir une offre de services claire","2026-11-01","2026-11-30",1,"E",[]],
-[2,0,"Formaliser l'entreprise (RCCM, NINEA), objet social génie civil et transport","2026-12-01","2027-02-28",2,"E",[1]],
+[2,0,"Formaliser l'entreprise (RCCM, NINEA), objet social génie civil et transport","2026-12-01","2027-02-28",2,"E",[]],
 [3,0,"Équiper ton bureau et ton outillage de chantier","2027-01-01","2027-06-30",2,"M",[]],
 [4,4,"Finaliser l'outil BAEL 91 Excel/VBA","2027-01-01","2027-03-31",2,"E",[]],
 [5,1,"Livrer 10 projets, dont un piloté de la faisabilité à la livraison","2027-01-01","2027-12-31",3,"M",[]],
@@ -990,9 +990,9 @@ const OBJ_SEED=[
 [24,4,"Une application qui génère des revenus pour l'entreprise","2027-10-01","2027-12-31",3,"F",[8,19]],
 [25,5,"Atteindre 100 apprenants","2027-10-01","2027-12-31",2,"M",[9]]
 ];
-const OBJ_V=3;
+const OBJ_V=4;
 // numéro dans une version précédente du planning -> numéro actuel (ordre chronologique)
-const OBJ_RENUM={1:{"1": 7, "2": 1, "3": 3, "4": 2, "5": 11, "6": 5, "7": 10, "8": 15, "9": 14, "10": 16, "11": 21, "12": 6, "13": 12, "14": 13, "15": 18, "16": 17, "17": 22, "18": 23, "19": 4, "20": 8, "21": 19, "22": 24, "23": 9, "24": 20, "25": 25},2:{"1": 7, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 11, "9": 8, "10": 9, "11": 10, "12": 12, "13": 13, "14": 14, "15": 15, "16": 16, "17": 17, "18": 18, "19": 19, "20": 20, "21": 21, "22": 22, "23": 23, "24": 24, "25": 25}};
+const OBJ_RENUM={1:{"1": 7, "2": 1, "3": 3, "4": 2, "5": 11, "6": 5, "7": 10, "8": 15, "9": 14, "10": 16, "11": 21, "12": 6, "13": 12, "14": 13, "15": 18, "16": 17, "17": 22, "18": 23, "19": 4, "20": 8, "21": 19, "22": 24, "23": 9, "24": 20, "25": 25},2:{"1": 7, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 11, "9": 8, "10": 9, "11": 10, "12": 12, "13": 13, "14": 14, "15": 15, "16": 16, "17": 17, "18": 18, "19": 19, "20": 20, "21": 21, "22": 22, "23": 23, "24": 24, "25": 25},3:{"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20,"21":21,"22":22,"23":23,"24":24,"25":25}};
 const OBJ_PERIODS=[["Tout",null,null],["Nov–Déc","2026-11-01","2026-12-31"],["T1","2027-01-01","2027-03-31"],["T2","2027-04-01","2027-06-30"],["T3","2027-07-01","2027-09-30"],["T4","2027-10-01","2027-12-31"]];
 const DAYMS=86400000;
 const pdN=s=>{const[a,b,c]=s.split('-').map(Number);return Date.UTC(a,b-1,c)/DAYMS;};
