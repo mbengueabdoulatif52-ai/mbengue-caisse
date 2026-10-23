@@ -210,6 +210,61 @@ a{text-decoration:none}
 .btn-save svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2.5}
 .btn-danger{flex:1;padding:10px;border-radius:var(--rs);background:var(--red-l);color:var(--red);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid rgba(220,38,38,.2);font-family:var(--font)}
 
+
+/* OBJECTIFS */
+.obj-wrap{padding:12px 0 24px}
+.obj-sum{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.obj-sum div{background:var(--surf);border:1.5px solid var(--border);border-radius:var(--rs);padding:9px 10px}
+.obj-sum b{display:block;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
+.obj-sum small{font-size:9px;color:var(--text3);font-weight:700;letter-spacing:.06em}
+.obj-prog{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:5px}
+.obj-prog i{display:block;height:100%;background:var(--green)}
+.obj-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.obj-chip{font-size:11px;font-weight:600;padding:5px 10px;border-radius:14px;border:1.5px solid var(--border2);color:var(--text2);background:var(--surf);cursor:pointer}
+.obj-chip.on{background:var(--violet);border-color:var(--violet);color:#fff}
+.obj-chip.right{margin-left:auto}
+.obj-grp{background:var(--surf);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.obj-gh{display:flex;align-items:center;gap:7px;padding:11px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.obj-gh svg{width:13px;height:13px;stroke:var(--text2);fill:none;stroke-width:2.5;transition:.15s}
+.obj-grp.closed .obj-gh svg{transform:rotate(-90deg)}
+.obj-gh .ct{margin-left:auto;font-size:10px;font-weight:600;color:var(--text3)}
+.obj-grp.closed .obj-row{display:none}
+.obj-row{padding:9px 12px;border-top:1px solid var(--border)}
+.obj-r1{display:flex;align-items:center;gap:8px}
+.obj-ck{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border2);flex:none;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surf)}
+.obj-ck svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:3;opacity:0}
+.obj-ck.on{background:var(--green);border-color:var(--green)}
+.obj-ck.on svg{opacity:1}
+.obj-no{font-size:10px;font-weight:700;color:var(--text3);width:24px;flex:none}
+.obj-nm{flex:1;min-width:0;font-size:12px;font-weight:600;line-height:1.35;cursor:pointer}
+.obj-row.done .obj-nm{text-decoration:line-through;color:var(--text3)}
+.obj-row.hid{opacity:.5}
+.obj-r2{display:flex;align-items:center;gap:7px;margin:6px 0 0 50px}
+.obj-trk{flex:1;height:6px;background:var(--bg);border-radius:3px;position:relative;min-width:60px}
+.obj-trk i{position:absolute;top:0;height:6px;border-radius:3px}
+.obj-trk .now{position:absolute;top:-3px;width:2px;height:12px;background:var(--orange);border-radius:1px}
+.obj-meta{font-size:10px;color:var(--text3);white-space:nowrap}
+.obj-pill{font-size:9px;font-weight:700;border-radius:4px;padding:1px 6px;background:var(--violet-l);color:var(--violet);white-space:nowrap}
+.obj-dep{font-size:10px;color:var(--yellow);margin:4px 0 0 50px}
+.obj-late{color:var(--red);font-weight:700}
+.f-E{background:#5dcaa5}.f-M{background:#ef9f27}.f-F{background:#f0997b}.f-done{background:var(--green)}
+.gt-wrap{background:var(--surf);border:1.5px solid var(--border);border-radius:var(--r);overflow-x:auto}
+.gt{min-width:620px;position:relative}
+.gt-row{display:flex;height:30px;border-bottom:1px solid var(--border);align-items:center}
+.gt-name{width:150px;flex:none;position:sticky;left:0;background:var(--surf);z-index:2;font-size:11px;font-weight:600;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-right:1px solid var(--border);height:100%;display:flex;align-items:center;gap:5px;cursor:pointer}
+.gt-name .n{color:var(--text3);font-size:9px;width:22px;flex:none}
+.gt-tl{flex:1;position:relative;height:100%}
+.gt-bar{position:absolute;top:9px;height:12px;border-radius:3px}
+.gt-head .gt-tl span{position:absolute;top:9px;font-size:9px;color:var(--text3);font-weight:600}
+.gt-grp .gt-name{background:var(--surf2);font-size:10px;color:var(--text2);letter-spacing:.04em;text-transform:uppercase}
+.gt-grp{background:var(--surf2)}
+.gt-line{position:absolute;top:0;bottom:0;width:1px;background:var(--border)}
+.gt-now{position:absolute;top:0;bottom:0;width:2px;background:var(--orange);z-index:1}
+.badge-obj{background:var(--violet-l);color:var(--violet)}
+.obj-more{font-size:11px;font-weight:600;color:var(--violet);padding:6px 2px;cursor:pointer}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.obj-err{font-size:11px;color:var(--red);min-height:15px;margin-top:4px}
+
 /* TOAST */
 #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a2332;color:#fff;padding:10px 18px;border-radius:30px;font-size:12px;font-weight:600;z-index:999;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1}
@@ -253,6 +308,7 @@ a{text-decoration:none}
   <!-- TABS -->
   <div class="tabs">
     <div class="tab active" onclick="switchTab('semaine',this)">Semaine</div>
+    <div class="tab" onclick="switchTab('objectifs',this)">Objectifs</div>
     <div class="tab" onclick="switchTab('bilan',this)">Bilan</div>
   </div>
 
@@ -281,6 +337,11 @@ a{text-decoration:none}
     </div>
   </div>
 
+  <!-- OBJECTIFS VIEW -->
+  <div id="view-objectifs" style="display:none">
+    <div class="obj-wrap" id="obj-content"></div>
+  </div>
+
   <!-- BILAN VIEW -->
   <div id="view-bilan" style="display:none">
     <div class="bilan-section" id="bilan-content"></div>
@@ -307,6 +368,11 @@ a{text-decoration:none}
         <div class="pick-list" id="proj-list">
           <div style="color:var(--text3);font-size:11px;font-style:italic">Chargement…</div>
         </div>
+      </div>
+      <div class="modal-section" id="obj-pick-section">
+        <div class="modal-section-title">Objectifs de l'entreprise · en cours</div>
+        <div class="pick-list" id="obj-pick-list"></div>
+        <div class="obj-more" id="obj-pick-more" onclick="toggleObjPickAll()">Voir tous les objectifs</div>
       </div>
       <div class="modal-section">
         <div class="modal-section-title">Activités personnelles</div>
@@ -338,12 +404,50 @@ a{text-decoration:none}
   </div>
 </div>
 
+
+<!-- MODAL OBJECTIF -->
+<div class="modal-bg" id="obj-modal" style="display:none" onclick="if(event.target.id==='obj-modal')closeObjModal()">
+  <div class="modal">
+    <div class="modal-bar"></div>
+    <div class="modal-head">
+      <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.06em" id="om-meta"></div>
+      <div class="modal-h" id="om-title" style="padding-right:30px;margin-top:2px"></div>
+      <button class="modal-close" onclick="closeObjModal()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section f2">
+        <div><div class="field-label">Début</div><input type="date" id="om-s" class="field-input"></div>
+        <div><div class="field-label">Fin</div><input type="date" id="om-e" class="field-input"></div>
+      </div>
+      <div class="modal-section">
+        <div class="field-label">Prédécesseurs <span style="color:var(--text3);font-weight:400">(numéros séparés par des virgules)</span></div>
+        <input type="text" id="om-p" class="field-input" placeholder="4, 9">
+      </div>
+      <div class="modal-section f2">
+        <div><div class="field-label">Difficulté</div><select id="om-d" class="field-input"><option value="1">★ Facile</option><option value="2">★★ Moyen</option><option value="3">★★★ Difficile</option></select></div>
+        <div><div class="field-label">Faisabilité</div><select id="om-f" class="field-input"><option value="E">Élevée</option><option value="M">Moyenne</option><option value="F">Faible</option></select></div>
+      </div>
+      <div class="modal-section" style="font-size:11px;color:var(--text2);line-height:1.5" id="om-info"></div>
+      <div class="obj-err" id="om-err"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" id="om-hide" onclick="toggleObjHidden()">Masquer</button>
+      <button class="btn-save" onclick="saveObj()">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        Enregistrer
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script type="module">
 import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import{getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import{getFirestore,enableIndexedDbPersistence,collection,doc,addDoc,deleteDoc,updateDoc,onSnapshot,query,orderBy,getDocs}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import{getFirestore,enableIndexedDbPersistence,collection,doc,addDoc,deleteDoc,updateDoc,onSnapshot,query,orderBy,getDocs,writeBatch}from'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const firebaseConfig={
   apiKey:"AIzaSyA0mNgqTnj9aAKaZkED_VxTdhrc4zohQJc",
@@ -368,6 +472,8 @@ let weekOffset=0;
 let selectedItems=[];  // dans modal
 let editingId=null;
 let unsubs=[];
+let objectifs=[];     // {id:'E4', num, p, name, s, e, d, f, preds, done, hidden}
+let objSeeding=false;
 
 // ── COLORS
 const COLORS=['c-violet','c-orange','c-green','c-blue','c-teal','c-yellow','c-red'];
@@ -449,8 +555,17 @@ function subscribe(){
     activites.filter(a=>a.type==='proj'&&a.factureId).forEach(a=>{if(!projColorMap[a.factureId])projColorMap[a.factureId]=a.color;});
     renderWeek();
     renderBilan();
+    renderObjectifs();
   });
-  unsubs=[u1,u2,u3];
+  // Objectifs
+  const u4=onSnapshot(collection(db,`users/${uid}/objectifs`),snap=>{
+    objectifs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(objectifs.length===0&&!snap.metadata.fromCache)seedObjectifs();
+    renderObjectifs();
+    renderModal_objectifs();
+    renderBilan();
+  });
+  unsubs=[u1,u2,u3,u4];
 }
 
 // ── TAB
@@ -459,6 +574,9 @@ window.switchTab=function(tab,el){
   el.classList.add('active');
   document.getElementById('view-semaine').style.display=tab==='semaine'?'block':'none';
   document.getElementById('view-bilan').style.display=tab==='bilan'?'block':'none';
+  document.getElementById('view-objectifs').style.display=tab==='objectifs'?'block':'none';
+  document.querySelector('.tb-sub').textContent=tab==='objectifs'?'OBJECTIFS 2027':'FEUILLES DE TEMPS';
+  if(tab==='objectifs')renderObjectifs();
 };
 
 // ── WEEK NAV
@@ -519,7 +637,7 @@ function renderWeek(){
       div.innerHTML=`
         <div class="entry-label">${e.label}</div>
         ${e.comment?`<div class="entry-comment">${e.comment}</div>`:''}
-        <span class="entry-badge ${e.type==='proj'?'badge-proj':'badge-libre'}">${e.type==='proj'?'Projet':'Activité libre'}</span>`;
+        <span class="entry-badge ${e.type==='proj'?'badge-proj':e.type==='obj'?'badge-obj':'badge-libre'}">${e.type==='proj'?'Projet':e.type==='obj'?'Objectif':'Activité libre'}</span>`;
       div.onclick=()=>openEditModal(e.id);
       body.appendChild(div);
     });
@@ -610,7 +728,18 @@ function renderBilan(){
   });
   const months=Object.keys(byMonth).sort().reverse();
 
+  const objCounts=objectifs.filter(o=>!o.hidden).map(o=>({o,n:activites.filter(a=>a.objectifId===o.id).length})).filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+  const objMax=Math.max(1,...objCounts.map(x=>x.n));
   bilan.innerHTML=`
+    ${objCounts.length?`<div class="bilan-card">
+      <div class="bilan-card-title">Entrées par objectif</div>
+      ${objCounts.map(({o,n})=>`
+        <div class="stat-row">
+          <div class="stat-name"><div class="stat-dot" style="background:var(--violet)"></div><span class="stat-name-text">E${o.num} · ${esc(o.name)}</span></div>
+          <div class="stat-count">${n}</div>
+        </div>
+        <div class="stat-bar-wrap"><div class="stat-bar" style="width:${Math.round(n/objMax*100)}%;background:var(--violet)"></div></div>`).join('')}
+    </div>`:''}
     <div class="bilan-card">
       <div class="bilan-card-title">Total — tous les temps</div>
       ${sorted.length===0?'<div class="bilan-empty">Aucune activité enregistrée</div>':
@@ -656,6 +785,7 @@ window.openModal=function(){
   const todayStr=dateStr(today());
   document.getElementById('modal-date').value=todayStr;
   document.querySelectorAll('.pick-item').forEach(el=>el.classList.remove('selected'));
+  objPickAll=false;renderModal_objectifs();
   collapseCreate();
   document.getElementById('modal').style.display='flex';
   document.body.style.overflow='hidden';
@@ -670,7 +800,8 @@ function openEditModal(id){
   const e=activites.find(a=>a.id===id);
   if(!e)return;
   editingId=id;
-  selectedItems=[{label:e.label,color:e.color,type:e.type,factureId:e.factureId}];
+  selectedItems=[{label:e.label,color:e.color,type:e.type,factureId:e.factureId,objectifId:e.objectifId}];
+  objPickAll=true;renderModal_objectifs();
   document.getElementById('modal-title').textContent='Modifier l\'entrée';
   document.getElementById('modal-date').value=e.date;
   document.getElementById('modal-comment').value=e.comment||'';
@@ -805,14 +936,14 @@ window.saveEntry=async function(){
       const s=selectedItems[0];
       await updateDoc(doc(db,`users/${uid}/activites/${editingId}`),{
         date:dateVal,label:s.label,color:s.color,type:s.type,
-        factureId:s.factureId||null,comment,updatedAt:Date.now()
+        factureId:s.factureId||null,objectifId:s.objectifId||null,comment,updatedAt:Date.now()
       });
       closeModal();toast('Entrée modifiée ✓');
     } else {
       for(const s of selectedItems){
         await addDoc(collection(db,`users/${uid}/activites`),{
           date:dateVal,label:s.label,color:s.color,type:s.type,
-          factureId:s.factureId||null,comment,createdAt:Date.now()
+          factureId:s.factureId||null,objectifId:s.objectifId||null,comment,createdAt:Date.now()
         });
       }
       closeModal();toast(selectedItems.length>1?`${selectedItems.length} entrées ajoutées ✓`:'Entrée ajoutée ✓');
@@ -827,6 +958,220 @@ window.deleteEntry=async function(id){
     closeModal();toast('Entrée supprimée');
   }catch(e){toast('Erreur: '+e.message);}
 };
+
+
+// ── OBJECTIFS 2027
+const OBJ_PILLARS=["Structuration","Commercial et production","Finances de l'entreprise","Investissements et transport","Outils et applications","Formations"];
+const OBJ_SEED=[
+[1,0,"Ouvrir un compte séparé dédié à l'activité, en attendant le compte pro","2026-11-01","2026-12-31",1,"E",[]],
+[2,0,"Définir une offre de services claire","2026-11-01","2026-11-30",1,"E",[]],
+[3,0,"Équiper ton bureau et ton outillage de chantier","2026-12-01","2027-06-30",2,"M",[]],
+[4,0,"Formaliser l'entreprise (RCCM, NINEA) puis ouvrir le compte pro à son nom","2027-01-01","2027-03-31",2,"E",[1]],
+[5,0,"Modèles types (contrat, devis, PV) et facturation avec relance","2027-01-01","2027-03-31",2,"E",[2]],
+[6,1,"Livrer 10 projets, dont un piloté de la faisabilité à la livraison","2027-01-01","2027-12-31",3,"M",[]],
+[7,1,"Contenu technique régulier pour l'entreprise, puis un article ou un séminaire","2027-01-01","2027-12-31",2,"M",[]],
+[8,1,"Portfolio imprimé et numérique avec rendus photoréalistes","2027-04-01","2027-09-30",2,"E",[]],
+[9,1,"Premiers contrats récurrents hors salaire","2027-04-01","2027-06-30",3,"M",[4]],
+[10,1,"Réseau de sous-traitants et d'artisans fiables","2027-04-01","2027-09-30",2,"M",[4]],
+[11,1,"Remporter un marché public","2027-07-01","2027-12-31",3,"F",[4]],
+[12,2,"Atteindre le chiffre d'affaires annuel cible","2027-01-01","2027-12-31",3,"M",[]],
+[13,2,"Te verser une rémunération fixe depuis l'entreprise, sans autre prélèvement","2027-04-01","2027-12-31",2,"M",[4]],
+[14,2,"Bilan financier mensuel de l'entreprise","2027-04-01","2027-12-31",2,"E",[4]],
+[15,2,"Trésorerie de réserve de l'entreprise : 3 mois de charges","2027-07-01","2027-12-31",3,"M",[9]],
+[16,3,"Projet immobilier de l'entreprise : opportunités, rentabilité, financement","2027-04-01","2027-09-30",3,"M",[4]],
+[17,3,"Lancer le volet transport : plan de flotte et premier contrat","2027-07-01","2027-12-31",3,"M",[4]],
+[18,3,"Acquérir un terrain ou un premier actif productif pour l'entreprise","2027-10-01","2027-12-31",3,"F",[16]],
+[19,4,"Finaliser l'outil BAEL 91 Excel/VBA","2027-01-01","2027-03-31",2,"E",[]],
+[20,4,"Base de prix unitaires et outil d'estimation (DQE, métrés, devis)","2027-01-01","2027-06-30",3,"M",[]],
+[21,4,"V1 de WERAL testée sur un chantier","2027-07-01","2027-09-30",3,"M",[]],
+[22,4,"Une application qui génère des revenus pour l'entreprise","2027-10-01","2027-12-31",3,"F",[20,21]],
+[23,5,"Publier les formations AutoCAD et ArchiCAD sous MBENGUE ARCHIBUILDING","2027-01-01","2027-06-30",2,"E",[]],
+[24,5,"Animer un atelier de formation en présentiel","2027-07-01","2027-09-30",2,"M",[23]],
+[25,5,"Atteindre 100 apprenants","2027-10-01","2027-12-31",2,"M",[23]]
+];
+const OBJ_PERIODS=[["Tout",null,null],["Nov–Déc","2026-11-01","2026-12-31"],["T1","2027-01-01","2027-03-31"],["T2","2027-04-01","2027-06-30"],["T3","2027-07-01","2027-09-30"],["T4","2027-10-01","2027-12-31"]];
+const DAYMS=86400000;
+const pdN=s=>{const[a,b,c]=s.split('-').map(Number);return Date.UTC(a,b-1,c)/DAYMS;};
+const isoN=n=>new Date(n*DAYMS).toISOString().slice(0,10);
+const fdN=n=>{const d=new Date(n*DAYMS);return String(d.getUTCDate()).padStart(2,'0')+'/'+String(d.getUTCMonth()+1).padStart(2,'0')+'/'+String(d.getUTCFullYear()).slice(2);};
+const OBJ_DS=pdN('2026-11-01'),OBJ_DE=pdN('2028-01-01'),OBJ_LIMIT=pdN('2027-12-31');
+const todayN=()=>{const d=new Date();return Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/DAYMS;};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+let objUi={per:0,view:'liste',showHid:false,closed:{}};
+try{const u=JSON.parse(localStorage.getItem('architemps-obj-ui')||'null');if(u)objUi={...objUi,...u};}catch(e){}
+function keepObjUi(){try{localStorage.setItem('architemps-obj-ui',JSON.stringify(objUi));}catch(e){}}
+let objPickAll=false;
+
+async function seedObjectifs(){
+  if(objSeeding||!uid)return;objSeeding=true;
+  try{
+    const b=writeBatch(db);
+    OBJ_SEED.forEach(r=>b.set(doc(db,`users/${uid}/objectifs/E${r[0]}`),{num:r[0],p:r[1],name:r[2],s:r[3],e:r[4],d:r[5],f:r[6],preds:r[7],done:false,hidden:false,createdAt:Date.now()}));
+    await b.commit();
+  }catch(e){toast('Erreur objectifs : '+e.message);}
+  objSeeding=false;
+}
+
+function objByNum(n){return objectifs.find(o=>o.num===n);}
+let OSCH={};
+function objSchedule(){
+  OSCH={};const busy={};
+  const effPreds=(o,seen=new Set())=>{const out=[];(o.preds||[]).forEach(n=>{const p=objByNum(n);if(!p||seen.has(n))return;seen.add(n);if(p.hidden)out.push(...effPreds(p,seen));else out.push(p.id);});return[...new Set(out)];};
+  const go=o=>{
+    if(OSCH[o.id])return OSCH[o.id];if(busy[o.id])return null;busy[o.id]=1;
+    const s0=pdN(o.s),e0=pdN(o.e),dur=e0-s0;let s=s0;
+    const ps=o.hidden?[]:effPreds(o);
+    ps.forEach(pid=>{const p=objectifs.find(x=>x.id===pid);const r=p&&go(p);if(r&&r.e+1>s)s=r.e+1;});
+    OSCH[o.id]={s,e:s+dur,shifted:s!==s0};return OSCH[o.id];
+  };
+  objectifs.forEach(go);
+}
+const objX=n=>((Math.max(OBJ_DS,Math.min(OBJ_DE,n))-OBJ_DS)/(OBJ_DE-OBJ_DS))*100;
+function objVisible(o){
+  if(o.hidden&&!objUi.showHid)return false;
+  if(objUi.per){const[,a,b]=OBJ_PERIODS[objUi.per];const r=OSCH[o.id];if(r.e<pdN(a)||r.s>pdN(b))return false;}
+  return true;
+}
+function objEntries(id){return activites.filter(a=>a.objectifId===id).length;}
+function moShort(n){const d=new Date(n*DAYMS);return MONTHS[d.getUTCMonth()];}
+function objPeriodLabel(r){const a=moShort(r.s),b=moShort(r.e);const ya=new Date(r.s*DAYMS).getUTCFullYear(),yb=new Date(r.e*DAYMS).getUTCFullYear();return a===b&&ya===yb?a:`${a}${ya!==yb?' '+String(ya).slice(2):''}–${b} ${String(yb).slice(2)}`;}
+
+function renderObjectifs(){
+  const box=document.getElementById('obj-content');if(!box)return;
+  if(!objectifs.length){box.innerHTML='<div class="bilan-empty" style="padding:20px 0">Préparation de tes objectifs…</div>';return;}
+  objSchedule();
+  const tN=todayN();
+  const act=objectifs.filter(o=>!o.hidden);
+  const done=act.filter(o=>o.done).length;
+  const cur=act.filter(o=>!o.done&&OSCH[o.id].s<=tN&&OSCH[o.id].e>=tN).length;
+  const late=act.filter(o=>!o.done&&OSCH[o.id].e<tN).length;
+  const nHid=objectifs.length-act.length;
+  let h=`<div class="obj-sum">
+    <div><b>${done} / ${act.length}</b><small>FAITS</small><div class="obj-prog"><i style="width:${act.length?Math.round(done/act.length*100):0}%"></i></div></div>
+    <div><b>${cur}</b><small>EN COURS</small></div>
+    <div><b style="color:${late?'var(--red)':'inherit'}">${late}</b><small>EN RETARD</small></div>
+  </div>
+  <div class="obj-chips">${OBJ_PERIODS.map((p,i)=>`<span class="obj-chip${objUi.per===i?' on':''}" onclick="objSetPer(${i})">${p[0]}</span>`).join('')}
+    <span class="obj-chip right${objUi.view==='gantt'?' on':''}" onclick="objToggleView()">${objUi.view==='gantt'?'Liste':'Gantt'}</span>
+  </div>`;
+  if(nHid)h+=`<div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">${nHid} objectif${nHid>1?'s':''} masqué${nHid>1?'s':''} · <span style="color:var(--violet);font-weight:600;cursor:pointer" onclick="objToggleHid()">${objUi.showHid?'Les cacher':'Les afficher'}</span></div>`;
+  const sorted=[...objectifs].sort((a,b)=>a.p-b.p||OSCH[a.id].s-OSCH[b.id].s||a.num-b.num);
+  if(objUi.view==='gantt'){h+=renderObjGantt(sorted,tN);box.innerHTML=h;return;}
+  OBJ_PILLARS.forEach((pn,pi)=>{
+    const all=objectifs.filter(o=>o.p===pi&&!o.hidden);
+    const list=sorted.filter(o=>o.p===pi&&objVisible(o));
+    if(!list.length)return;
+    const dn=all.filter(o=>o.done).length,ent=all.reduce((s,o)=>s+objEntries(o.id),0);
+    const closed=objUi.closed[pi];
+    h+=`<div class="obj-grp${closed?' closed':''}"><div class="obj-gh" onclick="objToggleGrp(${pi})"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>${esc(pn)}<span class="ct">${dn}/${all.length}${ent?` · ${ent} entrée${ent>1?'s':''}`:''}</span></div>`;
+    list.forEach(o=>{
+      const r=OSCH[o.id],n=objEntries(o.id),isLate=!o.done&&!o.hidden&&r.e<tN,over=!o.hidden&&r.e>OBJ_LIMIT;
+      const x1=objX(r.s),x2=objX(r.e+1);
+      const deps=(o.preds||[]).filter(k=>objByNum(k));
+      h+=`<div class="obj-row${o.done?' done':''}${o.hidden?' hid':''}">
+        <div class="obj-r1"><div class="obj-ck${o.done?' on':''}" role="checkbox" aria-checked="${!!o.done}" onclick="objToggleDone('${o.id}')"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <span class="obj-no">E${o.num}</span><span class="obj-nm" onclick="openObjModal('${o.id}')">${esc(o.name)}</span></div>
+        <div class="obj-r2"><div class="obj-trk"><i class="${o.done?'f-done':'f-'+o.f}" style="left:${x1}%;width:${Math.max(2,x2-x1)}%"></i>${tN>=OBJ_DS&&tN<OBJ_DE?`<span class="now" style="left:${objX(tN)}%"></span>`:''}</div>
+          <span class="obj-meta${isLate?' obj-late':''}">${isLate?'En retard · ':''}${over?'⚠ ':''}${objPeriodLabel(r)}</span>${n?`<span class="obj-pill">${n} entrée${n>1?'s':''}</span>`:''}</div>
+        ${deps.length?`<div class="obj-dep">Après ${deps.map(k=>'E'+k).join(', ')}${r.shifted?' · dates décalées':''}</div>`:''}
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+  box.innerHTML=h;
+}
+function renderObjGantt(sorted,tN){
+  const months=[];for(let m=0;m<14;m++){const d=new Date(Date.UTC(2026,10+m,1));months.push({x:objX(d.getTime()/DAYMS),l:MONTHS[d.getUTCMonth()]});}
+  let g=`<div class="gt-wrap"><div class="gt"><div class="gt-row gt-head"><div class="gt-name" style="cursor:default;color:var(--text3);font-size:9px">OBJECTIF</div><div class="gt-tl">${months.map(m=>`<span style="left:calc(${m.x}% + 3px)">${m.l}</span>`).join('')}</div></div>`;
+  OBJ_PILLARS.forEach((pn,pi)=>{
+    const list=sorted.filter(o=>o.p===pi&&objVisible(o));if(!list.length)return;
+    g+=`<div class="gt-row gt-grp"><div class="gt-name" style="cursor:default">${esc(pn)}</div><div class="gt-tl"></div></div>`;
+    list.forEach(o=>{const r=OSCH[o.id],x1=objX(r.s),x2=objX(r.e+1);
+      g+=`<div class="gt-row"><div class="gt-name" onclick="openObjModal('${o.id}')" title="${esc(o.name)}"><span class="n">E${o.num}</span>${esc(o.name)}</div><div class="gt-tl">${months.map(m=>`<div class="gt-line" style="left:${m.x}%"></div>`).join('')}${tN>=OBJ_DS&&tN<OBJ_DE?`<div class="gt-now" style="left:${objX(tN)}%"></div>`:''}<div class="gt-bar ${o.done?'f-done':'f-'+o.f}" style="left:${x1}%;width:${Math.max(1,x2-x1)}%;${o.hidden?'opacity:.35':''}" onclick="openObjModal('${o.id}')"></div></div></div>`;});
+  });
+  return g+`</div></div><div style="font-size:10px;color:var(--text3);margin-top:8px;display:flex;gap:12px;flex-wrap:wrap"><span><span class="f-E" style="display:inline-block;width:10px;height:8px;border-radius:2px"></span> Faisabilité élevée</span><span><span class="f-M" style="display:inline-block;width:10px;height:8px;border-radius:2px"></span> Moyenne</span><span><span class="f-F" style="display:inline-block;width:10px;height:8px;border-radius:2px"></span> Faible</span><span><span class="f-done" style="display:inline-block;width:10px;height:8px;border-radius:2px"></span> Fait</span></div>`;
+}
+window.objSetPer=i=>{objUi.per=i;keepObjUi();renderObjectifs();};
+window.objToggleView=()=>{objUi.view=objUi.view==='gantt'?'liste':'gantt';keepObjUi();renderObjectifs();};
+window.objToggleHid=()=>{objUi.showHid=!objUi.showHid;keepObjUi();renderObjectifs();};
+window.objToggleGrp=pi=>{objUi.closed[pi]=!objUi.closed[pi];keepObjUi();renderObjectifs();};
+window.objToggleDone=async id=>{
+  const o=objectifs.find(x=>x.id===id);if(!o||o.hidden)return;
+  try{await updateDoc(doc(db,`users/${uid}/objectifs/${id}`),{done:!o.done,updatedAt:Date.now()});toast(o.done?'Objectif rouvert':'Objectif fait ✓');}catch(e){toast('Erreur: '+e.message);}
+};
+
+let objEditing=null;
+window.openObjModal=function(id){
+  const o=objectifs.find(x=>x.id===id);if(!o)return;objEditing=id;objSchedule();
+  const r=OSCH[id];
+  document.getElementById('om-meta').textContent=`E${o.num} · ${OBJ_PILLARS[o.p].toUpperCase()}`;
+  document.getElementById('om-title').textContent=o.name;
+  document.getElementById('om-s').value=o.s;document.getElementById('om-e').value=o.e;
+  document.getElementById('om-p').value=(o.preds||[]).join(', ');
+  document.getElementById('om-d').value=o.d;document.getElementById('om-f').value=o.f;
+  document.getElementById('om-err').textContent='';
+  document.getElementById('om-hide').textContent=o.hidden?'Réafficher':'Masquer';
+  const succ=objectifs.filter(x=>(x.preds||[]).includes(o.num)).map(x=>'E'+x.num);
+  const n=objEntries(id);
+  document.getElementById('om-info').innerHTML=[
+    r.shifted?`Dates prévues décalées par les prédécesseurs : <b>${fdN(r.s)} → ${fdN(r.e)}</b>.`:'',
+    succ.length?`Objectifs qui en dépendent : ${succ.join(', ')}.`:'Aucun objectif n\'en dépend.',
+    `${n} entrée${n>1?'s':''} de temps rattachée${n>1?'s':''}.`
+  ].filter(Boolean).join('<br>');
+  document.getElementById('obj-modal').style.display='flex';document.body.style.overflow='hidden';
+};
+window.closeObjModal=function(){document.getElementById('obj-modal').style.display='none';document.body.style.overflow='';objEditing=null;};
+function objCycle(num,preds){const seen=new Set();const st=[...preds];while(st.length){const p=st.pop();if(p===num)return true;if(seen.has(p))continue;seen.add(p);const o=objByNum(p);if(o)st.push(...(o.preds||[]));}return false;}
+window.saveObj=async function(){
+  const o=objectifs.find(x=>x.id===objEditing);if(!o)return;
+  const err=m=>{document.getElementById('om-err').textContent=m;};
+  const s=document.getElementById('om-s').value,e=document.getElementById('om-e').value;
+  if(!s||!e)return err('Renseigne une date de début et une date de fin.');
+  if(pdN(e)<pdN(s))return err('La fin doit être après le début.');
+  const raw=document.getElementById('om-p').value.trim();
+  const preds=raw?raw.split(/[,;\s]+/).filter(Boolean).map(x=>Number(String(x).replace(/^E/i,''))):[];
+  const bad=preds.filter(p=>isNaN(p)||!objByNum(p)||p===o.num);
+  if(bad.length)return err(`Numéro invalide. Utilise des numéros d'objectifs existants, différents de ${o.num}.`);
+  if(objCycle(o.num,preds))return err('Ces prédécesseurs créent une boucle de dépendances.');
+  try{
+    await updateDoc(doc(db,`users/${uid}/objectifs/${o.id}`),{s,e,preds:[...new Set(preds)],d:Number(document.getElementById('om-d').value),f:document.getElementById('om-f').value,updatedAt:Date.now()});
+    closeObjModal();toast('Objectif mis à jour ✓');
+  }catch(x){err('Erreur : '+x.message);}
+};
+window.toggleObjHidden=async function(){
+  const o=objectifs.find(x=>x.id===objEditing);if(!o)return;
+  try{await updateDoc(doc(db,`users/${uid}/objectifs/${o.id}`),{hidden:!o.hidden,updatedAt:Date.now()});closeObjModal();toast(o.hidden?'Objectif réaffiché':'Objectif masqué');}catch(x){toast('Erreur: '+x.message);}
+};
+
+function renderModal_objectifs(){
+  const list=document.getElementById('obj-pick-list');if(!list)return;
+  const more=document.getElementById('obj-pick-more');
+  if(!objectifs.length){list.innerHTML='';more.style.display='none';return;}
+  objSchedule();const tN=todayN();
+  const sel=selectedItems.find(s=>s.type==='obj');
+  let pool=objectifs.filter(o=>!o.hidden&&(!o.done||(sel&&sel.objectifId===o.id)));
+  pool.sort((a,b)=>{const ra=OSCH[a.id],rb=OSCH[b.id];const ca=ra.s<=tN&&ra.e>=tN?0:ra.s>tN?1:2,cb=rb.s<=tN&&rb.e>=tN?0:rb.s>tN?1:2;return ca-cb||ra.e-rb.e||a.num-b.num;});
+  const current=pool.filter(o=>OSCH[o.id].s<=tN&&OSCH[o.id].e>=tN);
+  let shown=objPickAll?pool:(current.length?current:pool.slice(0,4));
+  if(sel&&!shown.find(o=>o.id===sel.objectifId)){const x=pool.find(o=>o.id===sel.objectifId);if(x)shown=[x,...shown];}
+  document.querySelector('#obj-pick-section .modal-section-title').textContent=objPickAll?"Objectifs de l'entreprise · tous":(current.length?"Objectifs de l'entreprise · en cours":"Objectifs de l'entreprise · à venir");
+  more.style.display=pool.length>shown.length||objPickAll?'block':'none';
+  more.textContent=objPickAll?'Afficher seulement les objectifs en cours':'Voir tous les objectifs';
+  list.innerHTML='';
+  shown.forEach(o=>{
+    const r=OSCH[o.id];const label=`E${o.num} · ${o.name}`;
+    const div=document.createElement('div');
+    div.className='pick-item'+(selectedItems.find(s=>s.objectifId===o.id)?' selected':'');
+    div.dataset.name=label;
+    div.innerHTML=`<div class="pick-dot" style="background:var(--violet)"></div>
+      <div class="pick-info"><div class="pick-name">${esc(label)}</div>
+      <span class="pick-badge badge-obj">${esc(OBJ_PILLARS[o.p])} · jusqu'au ${fdN(r.e)}</span></div>
+      <div class="pick-check"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#fff" stroke-width="3" style="display:block"><polyline points="20 6 9 17 4 12"/></svg></div>`;
+    div.onclick=()=>togglePick(div,{label,color:'c-violet',type:'obj',objectifId:o.id});
+    list.appendChild(div);
+  });
+}
+window.toggleObjPickAll=function(){objPickAll=!objPickAll;renderModal_objectifs();};
 
 // ── TOAST
 function toast(msg){
