@@ -964,35 +964,42 @@ window.deleteEntry=async function(id){
 // ── OBJECTIFS 2027
 const OBJ_PILLARS=["Structuration","Commercial et production","Finances de l'entreprise","Investissements et transport","Outils et applications","Formations"];
 const OBJ_SEED=[
-[1,0,"Définir une offre de services claire","2026-11-01","2026-11-30",1,"E",[]],
-[2,0,"Formaliser l'entreprise (RCCM, NINEA), objet social génie civil et transport","2026-12-01","2027-02-28",2,"E",[]],
-[3,0,"Équiper ton bureau et ton outillage de chantier","2027-01-01","2027-06-30",2,"M",[]],
-[4,4,"Finaliser l'outil BAEL 91 Excel/VBA","2027-01-01","2027-03-31",2,"E",[]],
-[5,1,"Livrer 10 projets, dont un piloté de la faisabilité à la livraison","2027-01-01","2027-12-31",3,"M",[]],
-[6,2,"Atteindre le chiffre d'affaires annuel cible","2027-01-01","2027-12-31",3,"M",[]],
-[7,0,"Ouvrir le compte bancaire pro au nom de l'entreprise","2027-03-01","2027-03-15",1,"E",[2]],
-[8,4,"Base de prix unitaires et outil d'estimation (DQE, métrés, devis)","2027-03-01","2027-06-30",3,"M",[]],
-[9,5,"Publier les formations AutoCAD et ArchiCAD sous MBENGUE ARCHIBUILDING","2027-03-15","2027-06-30",2,"E",[2]],
-[10,1,"Contenu technique régulier pour l'entreprise, puis un article ou un séminaire","2027-03-15","2027-12-31",2,"M",[2]],
-[11,0,"Modèles types (contrat, devis, PV) et facturation avec relance","2027-03-16","2027-03-31",2,"E",[7]],
-[12,2,"Te verser une rémunération fixe depuis l'entreprise, sans autre prélèvement","2027-04-01","2027-12-31",2,"M",[11]],
-[13,2,"Bilan financier mensuel de l'entreprise","2027-04-01","2027-12-31",2,"E",[11]],
-[14,1,"Premiers contrats récurrents hors salaire","2027-04-01","2027-06-30",3,"M",[11]],
-[15,1,"Portfolio imprimé et numérique avec rendus photoréalistes","2027-04-01","2027-07-31",2,"E",[]],
-[16,1,"Réseau de sous-traitants et d'artisans fiables","2027-04-01","2027-09-30",2,"M",[2]],
-[17,3,"Projet immobilier de l'entreprise : opportunités, rentabilité, financement","2027-05-01","2027-09-30",3,"M",[2]],
-[18,2,"Trésorerie de réserve de l'entreprise : 3 mois de charges","2027-07-01","2027-12-31",3,"M",[14]],
-[19,4,"V1 de WERAL testée sur un chantier","2027-07-01","2027-09-30",3,"M",[]],
-[20,5,"Animer un atelier de formation en présentiel","2027-07-01","2027-09-30",2,"M",[9]],
-[21,1,"Remporter un marché public","2027-08-01","2027-12-31",3,"F",[15]],
-[22,3,"Lancer le volet transport : plan de flotte et premier contrat","2027-09-01","2027-12-31",3,"M",[2]],
-[23,3,"Acquérir un terrain ou un premier actif productif pour l'entreprise","2027-10-01","2027-12-31",3,"F",[17]],
-[24,4,"Une application qui génère des revenus pour l'entreprise","2027-10-01","2027-12-31",3,"F",[8,19]],
-[25,5,"Atteindre 100 apprenants","2027-10-01","2027-12-31",2,"M",[9]]
+[1,0,"Recadrer les secteurs d'activité (BTP études et travaux, transport, formation)","2026-11-01","2026-11-15",1,"E",[]],
+[2,0,"Définir une offre de services claire","2026-11-16","2026-11-30",1,"E",[1]],
+[3,0,"Formaliser l'entreprise (RCCM, NINEA), objet social BTP (études, travaux) et transport","2026-12-01","2027-02-28",2,"E",[1]],
+[4,0,"Trouver un architecte partenaire pour signer les plans","2026-12-01","2027-02-28",2,"M",[1]],
+[5,0,"Équiper ton bureau et ton outillage de chantier","2027-01-01","2027-06-30",2,"M",[]],
+[6,4,"Finaliser l'outil BAEL 91 Excel/VBA","2027-01-01","2027-03-31",2,"E",[]],
+[7,1,"Livrer 10 projets, dont un piloté de la faisabilité à la livraison","2027-01-01","2027-12-31",3,"M",[]],
+[8,2,"Atteindre le chiffre d'affaires annuel cible","2027-01-01","2027-12-31",3,"M",[]],
+[9,0,"Ouvrir le compte bancaire pro au nom de l'entreprise","2027-03-01","2027-03-15",1,"E",[3]],
+[10,4,"Base de prix unitaires et outil d'estimation (DQE, métrés, devis)","2027-03-01","2027-06-30",3,"M",[]],
+[11,5,"Publier les formations AutoCAD et ArchiCAD sous MBENGUE ARCHIBUILDING","2027-03-15","2027-06-30",2,"E",[3]],
+[12,1,"Contenu technique régulier pour l'entreprise, puis un article ou un séminaire","2027-03-15","2027-12-31",2,"M",[3]],
+[13,0,"Modèles types (contrat, devis, PV) et facturation avec relance","2027-03-16","2027-03-31",2,"E",[9]],
+[14,0,"Souscrire les assurances : RC pro et couverture des travaux","2027-03-16","2027-04-15",2,"M",[3]],
+[15,2,"Te verser une rémunération fixe depuis l'entreprise, sans autre prélèvement","2027-04-01","2027-12-31",2,"M",[13]],
+[16,2,"Bilan financier mensuel de l'entreprise","2027-04-01","2027-12-31",2,"E",[13]],
+[17,1,"Premiers contrats récurrents hors salaire","2027-04-01","2027-06-30",3,"M",[13]],
+[18,1,"Portfolio imprimé et numérique avec rendus photoréalistes","2027-04-01","2027-07-31",2,"E",[]],
+[19,1,"Réseau de sous-traitants et d'artisans fiables","2027-04-01","2027-09-30",2,"M",[3]],
+[20,1,"Trouver un chef de chantier de confiance","2027-04-01","2027-06-30",2,"M",[3]],
+[21,3,"Projet immobilier de l'entreprise : opportunités, rentabilité, financement","2027-05-01","2027-09-30",3,"M",[3]],
+[22,2,"Trésorerie de réserve de l'entreprise : 3 mois de charges","2027-07-01","2027-12-31",3,"M",[17]],
+[23,4,"V1 de WERAL testée sur un chantier","2027-07-01","2027-09-30",3,"M",[]],
+[24,5,"Animer un atelier de formation en présentiel","2027-07-01","2027-09-30",2,"M",[11]],
+[25,1,"Réaliser un premier chantier de travaux de bout en bout","2027-07-01","2027-12-31",3,"M",[14,20]],
+[26,1,"Remporter un marché public","2027-08-01","2027-12-31",3,"F",[18]],
+[27,3,"Lancer le volet transport : plan de flotte et premier contrat","2027-09-01","2027-12-31",3,"M",[3]],
+[28,3,"Acquérir un terrain ou un premier actif productif pour l'entreprise","2027-10-01","2027-12-31",3,"F",[21]],
+[29,4,"Une application qui génère des revenus pour l'entreprise","2027-10-01","2027-12-31",3,"F",[10,23]],
+[30,5,"Atteindre 100 apprenants","2027-10-01","2027-12-31",2,"M",[11]]
 ];
-const OBJ_V=4;
+const OBJ_V=5;
+// objectifs ajoutés en v5 : identifiant de document fixe -> numéro
+const OBJ_ADDED_V5={"N-secteurs":1,"N-architecte":4,"N-assurances":14,"N-chef":20,"N-chantier":25};
 // numéro dans une version précédente du planning -> numéro actuel (ordre chronologique)
-const OBJ_RENUM={1:{"1": 7, "2": 1, "3": 3, "4": 2, "5": 11, "6": 5, "7": 10, "8": 15, "9": 14, "10": 16, "11": 21, "12": 6, "13": 12, "14": 13, "15": 18, "16": 17, "17": 22, "18": 23, "19": 4, "20": 8, "21": 19, "22": 24, "23": 9, "24": 20, "25": 25},2:{"1": 7, "2": 1, "3": 2, "4": 3, "5": 4, "6": 5, "7": 6, "8": 11, "9": 8, "10": 9, "11": 10, "12": 12, "13": 13, "14": 14, "15": 15, "16": 16, "17": 17, "18": 18, "19": 19, "20": 20, "21": 21, "22": 22, "23": 23, "24": 24, "25": 25},3:{"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"10":10,"11":11,"12":12,"13":13,"14":14,"15":15,"16":16,"17":17,"18":18,"19":19,"20":20,"21":21,"22":22,"23":23,"24":24,"25":25}};
+const OBJ_RENUM={"1":{"1":9,"2":2,"3":5,"4":3,"5":13,"6":7,"7":12,"8":18,"9":17,"10":19,"11":26,"12":8,"13":15,"14":16,"15":22,"16":21,"17":27,"18":28,"19":6,"20":10,"21":23,"22":29,"23":11,"24":24,"25":30},"2":{"1":9,"2":2,"3":3,"4":5,"5":6,"6":7,"7":8,"8":13,"9":10,"10":11,"11":12,"12":15,"13":16,"14":17,"15":18,"16":19,"17":21,"18":22,"19":23,"20":24,"21":26,"22":27,"23":28,"24":29,"25":30},"3":{"1":2,"2":3,"3":5,"4":6,"5":7,"6":8,"7":9,"8":10,"9":11,"10":12,"11":13,"12":15,"13":16,"14":17,"15":18,"16":19,"17":21,"18":22,"19":23,"20":24,"21":26,"22":27,"23":28,"24":29,"25":30},"4":{"1":2,"2":3,"3":5,"4":6,"5":7,"6":8,"7":9,"8":10,"9":11,"10":12,"11":13,"12":15,"13":16,"14":17,"15":18,"16":19,"17":21,"18":22,"19":23,"20":24,"21":26,"22":27,"23":28,"24":29,"25":30}};
 const OBJ_PERIODS=[["Tout",null,null],["Nov–Déc","2026-11-01","2026-12-31"],["T1","2027-01-01","2027-03-31"],["T2","2027-04-01","2027-06-30"],["T3","2027-07-01","2027-09-30"],["T4","2027-10-01","2027-12-31"]];
 const DAYMS=86400000;
 const pdN=s=>{const[a,b,c]=s.split('-').map(Number);return Date.UTC(a,b-1,c)/DAYMS;};
@@ -1015,6 +1022,11 @@ async function migrateObjectifs(){
       if((o.v||1)>=OBJ_V)return;
       const map=OBJ_RENUM[o.v||1];const num=map&&map[o.num];const r=num&&OBJ_SEED.find(x=>x[0]===num);if(!r)return;
       b.update(doc(db,`users/${uid}/objectifs/${o.id}`),{num:r[0],p:r[1],name:r[2],s:r[3],e:r[4],d:r[5],f:r[6],preds:r[7],v:OBJ_V,updatedAt:Date.now()});n++;
+    });
+    Object.entries(OBJ_ADDED_V5).forEach(([id,num])=>{
+      if(objectifs.find(o=>o.id===id))return;
+      const r=OBJ_SEED.find(x=>x[0]===num);
+      b.set(doc(db,`users/${uid}/objectifs/${id}`),{num:r[0],p:r[1],name:r[2],s:r[3],e:r[4],d:r[5],f:r[6],preds:r[7],done:false,hidden:false,v:OBJ_V,createdAt:Date.now()});n++;
     });
     if(n)await b.commit();
   }catch(e){toast('Erreur objectifs : '+e.message);}
