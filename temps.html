@@ -558,10 +558,10 @@ function subscribe(){
     renderObjectifs();
   });
   // Objectifs
-  const u4=onSnapshot(collection(db,`users/${uid}/objectifs`),snap=>{
+  const u4=onSnapshot(collection(db,`users/${uid}/objectifs`),{includeMetadataChanges:true},snap=>{
     objectifs=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(objectifs.length===0&&!snap.metadata.fromCache)seedObjectifs();
-    else if(!snap.metadata.fromCache&&objectifs.some(o=>(o.v||1)<OBJ_V))migrateObjectifs();
+    else if(objectifs.length&&objectifs.some(o=>(o.v||1)<OBJ_V))migrateObjectifs();
     renderObjectifs();
     renderModal_objectifs();
     renderBilan();
