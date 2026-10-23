@@ -885,12 +885,69 @@ function subscribePrets(){
     query(collection(db,'users/'+_uid+'/prets'),orderBy('ts','desc')),
     snap=>{
       prets=snap.docs.map(d=>({id:d.id,...d.data()}));
+      window._pretsLoaded=true;maintenancePerso();
       if(window._curPage==='prets')renderPrets();
       else if(window._curPage==='journal'&&typeof renderJournal==='function')renderJournal();
     }
   );
 }
 window.subscribePrets=subscribePrets;
+
+// ── AVANCES PERSONNELLES (compte courant M. MBENGUE)
+function persoFiches(){return prets.filter(p=>p.type==='perso').sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.ts||0)-(b.ts||0));}
+function persoFiche(){return persoFiches()[0]||null;}
+function persoMeta(p){
+  const n=ops.filter(o=>o.pretId===p.id&&o.type==='sortie');
+  const last=n.map(o=>o.date||'').sort().pop()||p.date;
+  const d=last?new Date(last).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'';
+  return (n.length>1?n.length+' avances · dernière le ':'Avance du ')+d;
+}
+let _maintRunning=false,_maintDone=false;
+async function maintenancePerso(){
+  if(_maintRunning||_maintDone||!window._pretsLoaded||!window._opsLoaded)return;
+  const{db,collection,doc,getDocs,addDoc,updateDoc,deleteDoc}=window._fb;
+  const _uid=window._uid||uid;if(!_uid)return;
+  _maintRunning=true;
+  try{
+    // 1. « M. Bengue » → « M. MBENGUE » dans les données déjà enregistrées
+    for(const o of ops){
+      if(o.client==='M. Bengue — Avance perso')await updateDoc(doc(db,'users/'+_uid+'/operations/'+o.id),{client:'M. MBENGUE — Avance perso'});
+    }
+    for(const p of prets){
+      if(p.type==='perso'&&p.beneficiaire==='M. Bengue')await updateDoc(doc(db,'users/'+_uid+'/prets',p.id),{beneficiaire:'M. MBENGUE'});
+    }
+    // 2. Fusion des fiches perso dans la plus ancienne (le journal et le solde ne changent pas)
+    const fs=persoFiches();
+    if(fs.length>1){
+      const cible=fs[0];
+      let mt=cible.montant||0,rp=cible.rembourse||0;
+      for(const f of fs.slice(1)){
+        for(const o of ops.filter(o=>o.pretId===f.id&&o.type==='sortie')){
+          await updateDoc(doc(db,'users/'+_uid+'/operations/'+o.id),{pretId:cible.id});
+        }
+        const snap=await getDocs(collection(db,'users/'+_uid+'/prets/'+f.id+'/remboursements'));
+        for(const r of snap.docs){
+          const d=r.data();
+          const nr=await addDoc(collection(db,'users/'+_uid+'/prets/'+cible.id+'/remboursements'),d);
+          const op=ops.find(o=>o.rembId===r.id&&o.pretId===f.id);
+          if(op)await updateDoc(doc(db,'users/'+_uid+'/operations/'+op.id),{pretId:cible.id,rembId:nr.id});
+          await deleteDoc(r.ref);
+        }
+        // Remboursements liés au journal sans document de remboursement
+        for(const o of ops.filter(o=>o.pretId===f.id&&o.type==='entree'&&!o.rembId)){
+          await updateDoc(doc(db,'users/'+_uid+'/operations/'+o.id),{pretId:cible.id});
+        }
+        mt+=f.montant||0;rp+=f.rembourse||0;
+        await deleteDoc(doc(db,'users/'+_uid+'/prets',f.id));
+      }
+      const solde=rp>=mt;
+      await updateDoc(doc(db,'users/'+_uid+'/prets',cible.id),{montant:mt,rembourse:rp,beneficiaire:'M. MBENGUE',statut:solde?'solde':'encours',dateSolde:solde?(cible.dateSolde||null):null});
+      toast('Tes '+fs.length+' avances perso sont regroupées sur la fiche M. MBENGUE');
+    }
+    _maintDone=true;
+  }catch(e){console.warn('maintenancePerso',e);}
+  finally{_maintRunning=false;}
+}
 
 // ── RENDU PRÊTS
 let pretFilterActive='all';
@@ -920,7 +977,7 @@ function renderPrets(){
   document.getElementById('ps-actifs').textContent=actifs;
 
   // Liste filtrée
-  let list=prets;
+  let list=[...prets].sort((a,b)=>(b.type==='perso')-(a.type==='perso'));
   if(pretFilterActive!=='all')list=prets.filter(p=>p.statut===pretFilterActive);
 
   const el=document.getElementById('prets-list');
@@ -939,12 +996,12 @@ function renderPrets(){
     const av=p.type==='perso'?'MB':initiales(p.beneficiaire||'??');
     const selfClass=p.type==='perso'?' self-pret':'';
     return `<div class="pret-card${selfClass}" onclick="openPretDetail('${p.id}')">
-      ${p.type==='perso'?'<div style="display:inline-flex;align-items:center;gap:5px;background:#e8f0fa;color:#1a4a7a;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;margin-bottom:8px">🏢 Avance personnelle — Caisse entreprise</div>':''}
+      ${p.type==='perso'?'<div style="display:inline-flex;align-items:center;gap:5px;background:#e8f0fa;color:#1a4a7a;padding:3px 9px;border-radius:8px;font-size:10px;font-weight:700;margin-bottom:8px">🏢 Avances personnelles — Caisse entreprise</div>':''}
       <div class="pret-card-header">
         <div class="pret-avatar" style="background:${col}">${av}</div>
         <div class="pret-info">
-          <div class="pret-name">${p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—')}</div>
-          <div class="pret-meta">Prêt du ${p.date?new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):''}</div>
+          <div class="pret-name">${p.type==='perso'?'M. MBENGUE':(p.beneficiaire||'—')}</div>
+          <div class="pret-meta">${p.type==='perso'?persoMeta(p):'Prêt du '+(p.date?new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'')}</div>
         </div>
         <span class="pret-badge ${bdgClass}">${bdgLabel}</span>
       </div>
@@ -954,9 +1011,9 @@ function renderPrets(){
       </div>
       <div class="pret-prog-track"><div class="pret-prog-fill ${pgClass}" style="width:${pct}%"></div></div>
       <div class="pret-amounts">
-        <div class="pret-amt-col"><div class="pret-amt-lbl">Prêté</div><div class="pret-amt-val">${fmt(mt)} F</div></div>
+        <div class="pret-amt-col"><div class="pret-amt-lbl">${p.type==='perso'?'Avancé':'Prêté'}</div><div class="pret-amt-val">${fmt(mt)} F</div></div>
         <div class="pret-amt-col"><div class="pret-amt-lbl">Remboursé</div><div class="pret-amt-val green">${fmt(rp)} F</div></div>
-        <div class="pret-amt-col"><div class="pret-amt-lbl">Restant</div><div class="pret-amt-val orange">${fmt(rs)} F</div></div>
+        <div class="pret-amt-col"><div class="pret-amt-lbl">${p.type==='perso'?'Je dois':'Restant'}</div><div class="pret-amt-val orange">${fmt(rs)} F</div></div>
       </div>
     </div>`;
   }).join('');
@@ -971,7 +1028,7 @@ async function openPretDetail(id){
   const rp=p.rembourse||0,mt=p.montant||0,rs=mt-rp;
   const bdgClass=p.statut==='solde'?'pb-solde':p.statut==='retard'?'pb-retard':'pb-encours';
   const bdgLabel=p.statut==='solde'?'Soldé':p.statut==='retard'?'En retard':'En cours';
-  const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—');
+  const nom=p.type==='perso'?'M. MBENGUE':(p.beneficiaire||'—');
   const av=p.type==='perso'?'MB':initiales(nom);
 
   // Charger remboursements
@@ -1011,7 +1068,7 @@ async function openPretDetail(id){
           <div class="bp-avatar">${av}</div>
           <div>
             <div class="bp-name">${nom}</div>
-            <div class="bp-date">Prêt du ${p.date?new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
+            <div class="bp-date">${p.type==='perso'?'Avances personnelles · depuis le ':'Prêt du '}${p.date?new Date(p.date).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
             <span class="pret-badge ${bdgClass}" style="margin-top:4px;display:inline-block">${bdgLabel}</span>
           </div>
           <div style="margin-left:auto;display:flex;gap:6px;flex-shrink:0">
@@ -1022,13 +1079,14 @@ async function openPretDetail(id){
         </div>
         <div id="pret-del-confirm" hidden></div>
         <div class="bp-big-stats">
-          <div class="bp-bs"><div class="bp-bs-lbl">Prêté</div><div class="bp-bs-val">${fmt(mt)} F</div></div>
+          <div class="bp-bs"><div class="bp-bs-lbl">${p.type==='perso'?'Avancé':'Prêté'}</div><div class="bp-bs-val">${fmt(mt)} F</div></div>
           <div class="bp-bs"><div class="bp-bs-lbl">Remboursé</div><div class="bp-bs-val" style="color:var(--green)">${fmt(rp)} F</div></div>
-          <div class="bp-bs"><div class="bp-bs-lbl">Restant</div><div class="bp-bs-val" style="color:var(--orange)">${fmt(rs)} F</div></div>
+          <div class="bp-bs"><div class="bp-bs-lbl">${p.type==='perso'?'Je dois':'Restant'}</div><div class="bp-bs-val" style="color:var(--orange)">${fmt(rs)} F</div></div>
         </div>
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px">Historique</div>
         <div>${tlHtml}</div>
         ${p.statut!=='solde'?`<button class="btn-remb" onclick="closePretDetail();openRembForm('${id}')">Enregistrer un remboursement</button>`:''}
+        ${p.type==='perso'?`<button class="btn-remb" style="background:var(--orange)" onclick="closePretDetail();openPretForm(null,'perso')">＋ Nouvelle avance</button>`:''}
         <div style="height:8px"></div>
       </div>
     </div>
@@ -1049,7 +1107,7 @@ function askDeletePret(id){
   const box=document.getElementById('pret-del-confirm');
   if(!p||!box)return;
   if(!box.hidden){box.hidden=true;return;}
-  const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—');
+  const nom=p.type==='perso'?'M. MBENGUE — Avance perso':(p.beneficiaire||'—');
   const linked=ops.filter(o=>o.pretId===id);
   const nS=linked.filter(o=>o.type==='sortie').length;
   const rembs=linked.filter(o=>o.type==='entree');
@@ -1059,7 +1117,7 @@ function askDeletePret(id){
     // Fiche issue d'une migration : les lignes existaient avant, on ne les efface pas
     if(linked.length)items.push('les '+linked.length+' ligne'+(linked.length>1?'s':'')+' du journal sont <b>conservées</b> (simplement détachées du prêt) : le solde ne change pas');
   }else{
-    if(nS)items.push('la sortie « Prêt accordé » du journal');
+    if(nS)items.push(nS>1?'les '+nS+' sorties du journal ('+(p.type==='perso'?'avances':'prêts')+') : le solde de la caisse remontera d\'autant':'la sortie « Prêt accordé » du journal');
     if(rembs.length)items.push(rembs.length+' remboursement'+(rembs.length>1?'s':'')+' du journal ('+fmt(totR)+' F)');
     if(!linked.length)items.push('aucune écriture liée trouvée dans le journal : si ce prêt y figure, supprime la ligne à la main');
   }
@@ -1104,7 +1162,7 @@ window.askDeletePret=askDeletePret;window.deletePret=deletePret;
 // ── MIGRATION DES ANCIENS PRÊTS DU JOURNAL
 const PRET_RX=/pr[eê]t|avance/i, REMB_RX=/rembours/i;
 function normNom(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();}
-function isPersoNom(n){const k=normNom(n);return /abdou latif/.test(k)||k.startsWith('m. bengue');}
+function isPersoNom(n){const k=normNom(n);return /abdou latif/.test(k)||k.startsWith('m. bengue')||k.startsWith('m. mbengue');}
 // Sorties « prêt » non rattachées, regroupées par personne, avec les remboursements du même nom
 function migCandidates(){
   const groups=new Map();
@@ -1227,7 +1285,7 @@ async function applyMigration(){
       const lastRemb=g.rembs.map(o=>o.date||'').sort().pop()||null;
       const ref=await addDoc(collection(db,'users/'+_uid+'/prets'),{
         type:g.type,
-        beneficiaire:g.type==='perso'?'M. Bengue':g.nom,
+        beneficiaire:g.type==='perso'?'M. MBENGUE':g.nom,
         montant:g.total,date,
         motif:g.sorties.length===1?(g.sorties[0].description||''):'Migration — '+g.sorties.length+' sorties du journal',
         rembourse:g.remb,statut:solde?'solde':'encours',dateSolde:solde?lastRemb:null,
@@ -1401,7 +1459,7 @@ async function submitSalaire(){
         await addDoc(collection(db,'users/'+_uid+'/operations'),{
           montant:p.montant,type:'entree',categorie:'Remboursements reçus',
           description:'Remboursement avance perso — retenue sur salaire '+ymLabel(p.k).toLowerCase(),
-          client:'M. Bengue — Avance perso',tel:'',date:today,modePaiement:'Compensation',
+          client:'M. MBENGUE — Avance perso',tel:'',date:today,modePaiement:'Compensation',
           ts:new Date().toISOString(),numFacture:'',source:'pret',pretId:av.id,rembId:rr.id
         });
         rembTotal+=p.montant;
@@ -1454,7 +1512,7 @@ function openRembForm(id){
   const p=prets.find(x=>x.id===id);
   if(!p)return;
   const rs=(p.montant||0)-(p.rembourse||0);
-  const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'—');
+  const nom=p.type==='perso'?'M. MBENGUE — Avance perso':(p.beneficiaire||'—');
   const today=new Date().toISOString().split('T')[0];
   const html=`<div class="bottom-panel" id="remb-panel">
     <div class="bottom-panel-inner">
@@ -1532,7 +1590,7 @@ async function submitRemb(){
       dateSolde:isSolde?date:null
     });
     // 3. Entrée dans le journal
-    const nom=p.type==='perso'?'M. Bengue — Avance perso':(p.beneficiaire||'');
+    const nom=p.type==='perso'?'M. MBENGUE — Avance perso':(p.beneficiaire||'');
     const libelle=isSolde?'Solde total prêt — '+nom:'Remboursement prêt — '+nom;
     await addDoc(collection(db,'users/'+_uid+'/operations'),{
       montant,type:'entree',
@@ -1550,11 +1608,11 @@ window.toggleSoldeRemb=toggleSoldeRemb;window.submitRemb=submitRemb;
 
 // ── FORMULAIRE NOUVEAU PRÊT
 let _pretFormType='tiers',_pretEditId=null;
-function openPretForm(editId){
+function openPretForm(editId,presetType){
   _pretEditId=(typeof editId==='string')?editId:null;
   const ed=_pretEditId?prets.find(x=>x.id===_pretEditId):null;
   if(_pretEditId&&!ed)return;
-  _pretFormType=ed?(ed.type||'tiers'):'tiers';
+  _pretFormType=ed?(ed.type||'tiers'):(presetType==='perso'?'perso':'tiers');
   const today=new Date().toISOString().split('T')[0];
   const html=`<div class="bottom-panel" id="pret-form-panel">
     <div class="bottom-panel-inner">
@@ -1629,7 +1687,7 @@ async function savePret(){
   if(_pretFormType==='tiers'&&!benef){toast('Saisir un bénéficiaire');return;}
   const{db,collection,addDoc,doc,updateDoc}=window._fb;
   const _uid=window._uid||uid;
-  const nom=_pretFormType==='perso'?'M. Bengue — Avance perso':benef;
+  const nom=_pretFormType==='perso'?'M. MBENGUE — Avance perso':benef;
   const descr=(_pretFormType==='perso'?'Avance perso':'Prêt accordé')+(motif?' — '+motif:'');
   try{
     if(_pretEditId){
@@ -1641,7 +1699,7 @@ async function savePret(){
       const isSolde=rp>=montant;
       await updateDoc(doc(db,'users/'+_uid+'/prets',_pretEditId),{
         type:_pretFormType,
-        beneficiaire:_pretFormType==='perso'?'M. Bengue':benef,
+        beneficiaire:_pretFormType==='perso'?'M. MBENGUE':benef,
         montant,date,motif,
         statut:isSolde?'solde':(p&&p.statut==='retard'?'retard':'encours'),
         dateSolde:isSolde?((p&&p.dateSolde)||date):null
@@ -1661,10 +1719,25 @@ async function savePret(){
       return;
     }
     // ── CRÉATION
+    // Avance perso : elle s'ajoute à la fiche « M. MBENGUE » si elle existe (compte courant)
+    const fichePerso=_pretFormType==='perso'?persoFiche():null;
+    if(fichePerso){
+      const mt=(fichePerso.montant||0)+montant,rp=fichePerso.rembourse||0;
+      await updateDoc(doc(db,'users/'+_uid+'/prets',fichePerso.id),{montant:mt,statut:rp>=mt?'solde':'encours',dateSolde:rp>=mt?fichePerso.dateSolde||date:null});
+      await addDoc(collection(db,'users/'+_uid+'/operations'),{
+        montant,type:'sortie',categorie:'Prêts et avances accordés',description:descr,
+        client:nom,tel:'',date,modePaiement:'',
+        ts:new Date().toISOString(),numFacture:'',source:'pret',pretId:fichePerso.id
+      });
+      closePretForm();
+      toast('✅ Avance ajoutée à ta fiche M. MBENGUE');
+      goP('prets',null);
+      return;
+    }
     // 1. Créer le prêt dans Firestore
     const ref=await addDoc(collection(db,'users/'+_uid+'/prets'),{
       type:_pretFormType,
-      beneficiaire:_pretFormType==='perso'?'M. Bengue':benef,
+      beneficiaire:_pretFormType==='perso'?'M. MBENGUE':benef,
       montant,date,motif,
       rembourse:0,statut:'encours',
       ts:Date.now()
@@ -1709,6 +1782,7 @@ function subscribe(){
     // ts peut être une date ISO (texte) ou un nombre (anciennes écritures) : on trie sur une valeur commune
     const tsNum=o=>typeof o.ts==='number'?o.ts:(Date.parse(o.ts)||0);
     ops=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>tsNum(b)-tsNum(a));
+    window._opsLoaded=true;if(typeof maintenancePerso==='function')maintenancePerso();
     renderCurrent();
   });
   unsub2=onSnapshot(query(collection(db,'users/'+uid+'/factures'),orderBy('ts','desc')),snap=>{
@@ -2057,7 +2131,7 @@ function openOpDetail(id){
     ${detailRow('Client',o.client||'—')}
     ${detailRow('Catégorie',o.categorie||'—')}
     ${detailRow('Mode de paiement',o.modePaiement||'—')}
-    ${linkedPret(o)?`<div class="pret-lock"><strong>🔗 Liée au prêt de ${(()=>{const p=linkedPret(o);return p.type==='perso'?'M. Bengue (avance perso)':(p.beneficiaire||'—');})()}</strong>Pour modifier ou supprimer cette opération, passe par la fiche du prêt : le journal suivra automatiquement.</div>
+    ${linkedPret(o)?`<div class="pret-lock"><strong>🔗 Liée au prêt de ${(()=>{const p=linkedPret(o);return p.type==='perso'?'M. MBENGUE (avance perso)':(p.beneficiaire||'—');})()}</strong>Pour modifier ou supprimer cette opération, passe par la fiche du prêt : le journal suivra automatiquement.</div>
     <button onclick="goPretFromOp('${o.id}')" style="width:100%;margin-top:10px;padding:12px;border-radius:10px;border:none;background:var(--navy);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)">Ouvrir la fiche du prêt</button>`:`
     <div style="display:flex;gap:8px;margin-top:16px">
       <button onclick="editOp('${o.id}')" style="flex:1;padding:12px;border-radius:10px;border:0.5px solid var(--orange);background:#fff8f0;color:var(--orange);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)">Modifier</button>
