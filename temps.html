@@ -308,7 +308,6 @@ a{text-decoration:none}
   <!-- TABS -->
   <div class="tabs">
     <div class="tab active" onclick="switchTab('semaine',this)">Semaine</div>
-    <div class="tab" onclick="switchTab('objectifs',this)">Objectifs</div>
     <div class="tab" onclick="switchTab('bilan',this)">Bilan</div>
   </div>
 
@@ -337,10 +336,6 @@ a{text-decoration:none}
     </div>
   </div>
 
-  <!-- OBJECTIFS VIEW -->
-  <div id="view-objectifs" style="display:none">
-    <div class="obj-wrap" id="obj-content"></div>
-  </div>
 
   <!-- BILAN VIEW -->
   <div id="view-bilan" style="display:none">
@@ -575,9 +570,6 @@ window.switchTab=function(tab,el){
   el.classList.add('active');
   document.getElementById('view-semaine').style.display=tab==='semaine'?'block':'none';
   document.getElementById('view-bilan').style.display=tab==='bilan'?'block':'none';
-  document.getElementById('view-objectifs').style.display=tab==='objectifs'?'block':'none';
-  document.querySelector('.tb-sub').textContent=tab==='objectifs'?'OBJECTIFS 2027':'FEUILLES DE TEMPS';
-  if(tab==='objectifs')renderObjectifs();
 };
 
 // ── WEEK NAV
@@ -961,7 +953,8 @@ window.deleteEntry=async function(id){
 };
 
 
-// ── OBJECTIFS 2027
+// ── OBJECTIFS 2027 (affichés dans ArchiObjectifs ; ici pour rattacher les heures)
+// Même liste et même migration que objectifs.html : modifier les deux fichiers ensemble.
 const OBJ_PILLARS=["Structuration","Commercial et production","Finances de l'entreprise","Investissements et transport","Outils et applications","Formations"];
 const OBJ_SEED=[
 [1,0,"Recadrer les secteurs d'activité (BTP études et travaux, transport, formation)","2026-11-01","2026-11-15",1,"E",[]],

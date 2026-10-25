@@ -80,6 +80,7 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
 .module-card:active{transform:scale(.985)}
 .module-card.caisse{background:linear-gradient(135deg,#1b3a52 0%,#0d2236 100%)}
 .module-card.temps{background:linear-gradient(135deg,#1a1040 0%,#0f0828 100%)}
+.module-card.objectifs{background:linear-gradient(135deg,#4a2a10 0%,#24140a 100%)}
 .module-card.soon{background:var(--surf);opacity:.55;cursor:default;pointer-events:none}
 .module-card:active{transform:scale(.985)}
 
@@ -212,6 +213,34 @@ button{font-family:var(--font);cursor:pointer;border:none;background:none;color:
           <div class="mc-stat">
             <div class="mc-stat-val" id="stat-derniere">—</div>
             <div class="mc-stat-lbl">DERNIÈRE ENTRÉE</div>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <!-- ArchiObjectifs -->
+    <a class="module-card objectifs" href="objectifs.html" onclick="event.preventDefault();location.replace('objectifs.html')">
+      <div class="mc-blob mc-blob1"></div>
+      <div class="mc-blob mc-blob2"></div>
+      <div class="mc-arrow"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="mc-inner">
+        <div class="mc-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        </div>
+        <div class="mc-name">ArchiObjectifs</div>
+        <div class="mc-desc">Objectifs 2027 · Planning · Dépendances</div>
+        <div class="mc-stats">
+          <div class="mc-stat">
+            <div class="mc-stat-val" id="stat-obj-faits">—</div>
+            <div class="mc-stat-lbl">FAITS</div>
+          </div>
+          <div class="mc-stat">
+            <div class="mc-stat-val" id="stat-obj-cours">—</div>
+            <div class="mc-stat-lbl">EN COURS</div>
+          </div>
+          <div class="mc-stat">
+            <div class="mc-stat-val" id="stat-obj-retard">—</div>
+            <div class="mc-stat-lbl">EN RETARD</div>
           </div>
         </div>
       </div>
@@ -512,6 +541,19 @@ function showBoard(user){
       } else {document.getElementById('stat-derniere').textContent='—';}
     });
     unsubs.push(u3);
+
+    // ArchiObjectifs — avancement
+    const u4=onSnapshot(collection(db,`users/${uid}/objectifs`),snap=>{
+      const t=new Date().toISOString().slice(0,10);
+      const act=snap.docs.map(d=>d.data()).filter(o=>!o.hidden);
+      const faits=act.filter(o=>o.done).length;
+      const cours=act.filter(o=>!o.done&&o.s<=t&&o.e>=t).length;
+      const retard=act.filter(o=>!o.done&&o.e<t).length;
+      document.getElementById('stat-obj-faits').textContent=act.length?`${faits}/${act.length}`:'—';
+      document.getElementById('stat-obj-cours').textContent=act.length?cours:'—';
+      const r=document.getElementById('stat-obj-retard');r.textContent=act.length?retard:'—';r.style.color=retard?'#fbbf24':'';
+    });
+    unsubs.push(u4);
     resetLockTimer();
 }
 </script>
