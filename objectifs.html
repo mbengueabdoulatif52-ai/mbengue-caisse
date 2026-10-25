@@ -309,6 +309,31 @@ a{text-decoration:none}
 .cp-info{background:var(--surf2);color:var(--text3)}
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .cp-ok{background:rgba(22,163,74,.15)}:root:not([data-theme="light"]) .cp-warn{background:rgba(217,119,6,.15)}:root:not([data-theme="light"]) .cp-ko{background:rgba(220,38,38,.15)}:root:not([data-theme="light"]) .cib-years button.on{background:var(--orange);border-color:var(--orange)}}
 
+
+/* graphique horizontal */
+.hb{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.hb-r{display:grid;grid-template-columns:44px 1fr 78px;align-items:center;gap:8px;font-size:11px}
+.hb-m{color:var(--text2);font-weight:600}
+.hb-t{height:12px;background:var(--surf2);border:1px solid var(--border);border-radius:3px;position:relative;overflow:hidden}
+.hb-t i{position:absolute;left:0;top:0;bottom:0;background:var(--orange);border-radius:2px}
+.hb-t b{position:absolute;top:-1px;bottom:-1px;width:0;border-left:1.5px dashed var(--navy);opacity:.6}
+.hb-v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hb-r.zero .hb-v{color:var(--text3);font-weight:500}
+.hb-r.fut .hb-m,.hb-r.fut .hb-v{color:var(--text3)}
+/* santé financière */
+.sf-alert{background:var(--surf);border:1.5px solid var(--border);border-left:3px solid var(--red);border-radius:0 var(--r) var(--r) 0;padding:12px 14px;margin-bottom:8px}
+.sf-alert.ok{border-left-color:var(--green)}.sf-alert.warn{border-left-color:var(--yellow)}
+.sf-alert b{font-size:13px}.sf-alert div{font-size:11px;color:var(--text2);margin-top:4px;line-height:1.5}
+.sf-tbl{width:100%;border-collapse:collapse;font-size:11px;font-variant-numeric:tabular-nums;margin-top:6px}
+.sf-tbl th{font-size:9px;color:var(--text3);font-weight:700;text-align:right;padding:4px 0;letter-spacing:.04em}
+.sf-tbl th:first-child,.sf-tbl td:first-child{text-align:left}
+.sf-tbl td{padding:6px 0;border-top:1px solid var(--border);text-align:right}
+.sf-tbl tr.tot td{font-weight:700}
+.sf-flow{display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:8px;background:var(--surf2)}
+.sf-leg{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:10px;color:var(--text2);margin-top:7px}
+.sf-leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.sf-sub{font-size:10px;color:var(--text2);margin-top:2px}
+
 .page-hint{font-size:11px;color:var(--text3);margin:0 0 12px;line-height:1.5}
 </style>
 </head>
@@ -343,9 +368,11 @@ a{text-decoration:none}
   </div>
   <div class="tabs">
     <div class="tab active" id="tab-cibles" onclick="switchObjTab('cibles')">Cibles</div>
+    <div class="tab" id="tab-sante" onclick="switchObjTab('sante')">Santé financière</div>
     <div class="tab" id="tab-plan" onclick="switchObjTab('plan')">Planning</div>
   </div>
   <div id="view-cibles"><div id="dash-cibles" class="cib-wrap"></div></div>
+  <div id="view-sante" style="display:none"><div id="dash-sante" class="cib-wrap"></div></div>
   <div id="view-plan" style="display:none"><div class="obj-wrap" id="obj-content"></div></div>
 </div>
 
@@ -412,6 +439,8 @@ let uid=null;
 let activites=[];
 let factures=[];
 let ops=[];
+let prets=[];
+let salaireCfg=null;
 let unsubs=[];
 let objectifs=[];
 let objSeeding=false;
@@ -452,9 +481,10 @@ function subscribe(){
     else if(objectifs.length&&objectifs.some(o=>(o.v||1)<OBJ_V))migrateObjectifs();
     renderObjectifs();
   });
-  const u4=onSnapshot(collection(db,`users/${uid}/operations`),snap=>{ops=snap.docs.map(d=>({id:d.id,...d.data()}));renderCibles();});
-  const u5=onSnapshot(doc(db,`users/${uid}/data/settings`),snap=>{ciblesCfg=mergeCibles((snap.exists()&&snap.data().cibles)||{});renderCibles();});
-  unsubs=[u1,u2,u3,u4,u5];
+  const u4=onSnapshot(collection(db,`users/${uid}/operations`),snap=>{ops=snap.docs.map(d=>({id:d.id,...d.data()}));renderCibles();renderSante();});
+  const u6=onSnapshot(collection(db,`users/${uid}/prets`),snap=>{prets=snap.docs.map(d=>({id:d.id,...d.data()}));renderSante();});
+  const u5=onSnapshot(doc(db,`users/${uid}/data/settings`),snap=>{ciblesCfg=mergeCibles((snap.exists()&&snap.data().cibles)||{});salaireCfg=(snap.exists()&&snap.data().salaire)||null;renderCibles();renderSante();});
+  unsubs=[u1,u2,u3,u4,u5,u6];
 }
 // ── OBJECTIFS 2027
 const OBJ_PILLARS=["Structuration","Commercial et production","Finances de l'entreprise","Investissements et transport","Outils et applications","Formations"];
@@ -730,9 +760,8 @@ function renderCibles(){
     <div class="cib-row"><span class="cib-big">${fmt(real)} F</span><span class="cib-of">sur ${fmt(target)} F</span></div>
     <div class="cib-bar"><i style="width:${target?Math.min(100,real/target*100):0}%;background:var(--orange)"></i>${y===cy&&target?`<b style="left:${Math.min(100,frac*100)}%"></b>`:''}</div>
     ${note?`<div class="cib-note">${note}</div>`:''}
-    <div class="cib-bars">${tgtLine}${bars}</div>
-    <div class="cib-months">${CIB_MOIS.map(m=>`<span>${m}</span>`).join('')}</div>
-    <div class="cib-note" style="color:var(--text3)">Données d'ArchiCaisse, hors remboursements et prêts. Pointillé : cible mensuelle${m0?' (activité démarrée en '+MOIS_COURT[m0]+')':''}.</div>
+    ${hbars(y,mois,target?target/nbMois:0,m0)}
+    <div class="cib-note" style="color:var(--text3)">Données d'ArchiCaisse, hors remboursements et prêts. Pointillé : cible du mois${m0?' (activité démarrée en '+MOIS_COURT[m0]+')':''}.</div>
   </div>`;
   // Trésorerie (jusqu'à la date cible)
   const t=c.treso;
@@ -769,7 +798,7 @@ function renderCibles(){
   
 }
 const MOIS_COURT=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
-window.setCibYear=function(y){cibYear=y;renderCibles();};
+window.setCibYear=function(y){cibYear=y;renderCibles();renderSante();};
 window.openCiblesEdit=function(){
   const c=ciblesCfg;const years=Object.keys(c.ca).map(Number).sort();
   const html=`<div class="modal-bg" id="cib-panel" onclick="if(event.target.id==='cib-panel')closeCiblesEdit()">
@@ -815,14 +844,90 @@ function currentSolde(){return ops.reduce((s,o)=>s+(o.type==='entree'?1:-1)*(o.m
 const fmt=n=>Math.round(n||0).toLocaleString('fr-FR');
 function fmtK(v){if(v>=1e6)return (Math.round(v/1e5)/10).toString().replace('.',',')+' M';if(v>=1000)return Math.round(v/1000)+' k';return String(Math.round(v));}
 
+
+// ── GRAPHIQUE HORIZONTAL (montants exacts)
+const MOIS_LONG=['Janv.','Févr.','Mars','Avril','Mai','Juin','Juil.','Août','Sept.','Oct.','Nov.','Déc.'];
+function hbars(y,mois,cibleMois,m0){
+  const now=new Date(),cy=now.getFullYear();
+  const max=Math.max(cibleMois||0,...mois,1)*(cibleMois?1.1:1);
+  return `<div class="hb">${mois.map((v,i)=>{
+    if(i<m0)return '';
+    const fut=y>cy||(y===cy&&i>now.getMonth());
+    return `<div class="hb-r${v?'':' zero'}${fut&&!v?' fut':''}"><span class="hb-m">${MOIS_LONG[i]}</span><span class="hb-t"><i style="width:${Math.round(v/max*100)}%"></i>${cibleMois?`<b style="left:${Math.min(100,cibleMois/max*100)}%"></b>`:''}</span><span class="hb-v">${v?fmt(v)+' F':(fut?'—':'0 F')}</span></div>`;
+  }).join('')}</div>`;
+}
+
+// ── SANTÉ FINANCIÈRE (calculée depuis ArchiCaisse)
+const CAT_PRET='Prêts et avances accordés',CAT_REMB='Remboursements reçus',CAT_SAL='Rémunération du gérant';
+function estCharge(o){return o.type==='sortie'&&o.categorie!==CAT_PRET&&!estDon(o);}
+function sumOps(f){return ops.filter(f).reduce((s,o)=>s+(o.montant||0),0);}
+function renderSante(){
+  const el=document.getElementById('dash-sante');if(!el)return;
+  const now=new Date(),cy=now.getFullYear(),y=cibYear,ys=String(y);
+  const c=ciblesCfg,ds=(c.debut&&c.debut[y])||(y+'-01-01'),m0=Number(ds.slice(5,7))-1;
+  const lastM=y<cy?11:y>cy?-1:now.getMonth();
+  const rows=[];
+  for(let i=m0;i<=lastM;i++){const k=ys+'-'+String(i+1).padStart(2,'0');rows.push({i,ca:caPeriode(k),ch:sumOps(o=>o.date&&o.date.startsWith(k)&&estCharge(o))});}
+  const ca=rows.reduce((s,r)=>s+r.ca,0),ch=rows.reduce((s,r)=>s+r.ch,0),res=ca-ch;
+  const marge=ca?Math.round(res/ca*100):0;
+  const actifs=rows.filter(r=>r.ca||r.ch).slice(-3);
+  const chMoy=actifs.length?actifs.reduce((s,r)=>s+r.ch,0)/actifs.length:0;
+  const pretsY=sumOps(o=>o.date&&o.date.startsWith(ys)&&o.type==='sortie'&&o.categorie===CAT_PRET);
+  const rembY=sumOps(o=>o.date&&o.date.startsWith(ys)&&o.type==='entree'&&o.categorie===CAT_REMB);
+  const pretsNets=Math.max(0,pretsY-rembY),donsY=sumOps(o=>o.date&&o.date.startsWith(ys)&&estDon(o));
+  const solde=currentSolde();
+  const jours=chMoy>0?Math.max(0,Math.floor(solde/(chMoy/30))):null;
+  const creances=factures.reduce((s,f)=>s+Math.max(0,(f.montantTotal||0)-(f.paiements||[]).reduce((a,p)=>a+(p.montant||0),0)),0);
+  const ouverts=prets.filter(p=>p.statut!=='solde').map(p=>({...p,rest:(p.montant||0)-(p.rembourse||0)})).filter(p=>p.rest>0);
+  const duTot=ouverts.length?ouverts.reduce((s,p)=>s+p.rest,0):Math.max(0,sumOps(o=>o.type==='sortie'&&o.categorie===CAT_PRET)-sumOps(o=>o.type==='entree'&&o.categorie===CAT_REMB));
+  const duPerso=ouverts.filter(p=>p.type==='perso').reduce((s,p)=>s+p.rest,0);
+  const ym=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  const salVerse=sumOps(o=>o.type==='sortie'&&o.categorie===CAT_SAL&&(o.salaireMois===ym||(!o.salaireMois&&o.date&&o.date.startsWith(ym))));
+  const salMontant=salaireCfg&&salaireCfg.actif!==false?(salaireCfg.montant||0):0;
+  // Diagnostic
+  let cls='ok',titre='La situation financière est saine',txt=`Marge de ${marge} % et ${jours==null?'—':jours} jours de charges couverts par la trésorerie.`;
+  const partSortie=res>0?Math.round((pretsNets+donsY)/res*100):0;
+  if(!ca&&!ch){cls='warn';titre='Pas encore d\'activité sur cette année';txt='Les indicateurs se rempliront avec les opérations d\'ArchiCaisse.';}
+  else if(res<0){cls='';titre='Les charges dépassent le chiffre d\'affaires';txt=`Résultat de ${fmtS(res)} F sur l'année. Réduis les charges ou relance les encaissements.`;}
+  else if(jours!=null&&jours<30&&partSortie>=50){cls='';titre='L\'entreprise est rentable, mais sa caisse est vide';txt=`${marge} % de marge, mais ${partSortie} % du résultat est parti en prêts et en dons.`;}
+  else if(jours!=null&&jours<90){cls='warn';titre='Rentable, mais la réserve est faible';txt=`La trésorerie couvre ${jours} jours de charges ; l'objectif est de 3 mois.`;}
+  const tot=Math.max(ca+rembY,1);
+  const w=v=>Math.max(0,Math.round(v/tot*1000)/10);
+  el.innerHTML=`
+  <div class="cib-years">${Object.keys(c.ca).map(Number).sort().map(v=>`<button class="${v===y?'on':''}" onclick="setCibYear(${v})">${v}</button>`).join('')}</div>
+  <div class="sf-alert ${cls}"><b>${titre}</b><div>${txt}</div></div>
+  <div class="cib-card"><div class="cib-row"><span class="cib-lbl">Chiffre d'affaires par mois · ${y}</span><span class="cib-of">FCFA</span></div>${hbars(y,Array.from({length:12},(_,i)=>caPeriode(ys+'-'+String(i+1).padStart(2,'0'))),0,m0)}</div>
+  <div class="cib-card"><div class="cib-lbl">Résultat par mois</div>
+    <table class="sf-tbl"><tr><th>Mois</th><th>CA</th><th>Charges</th><th>Résultat</th></tr>
+    ${rows.map(r=>`<tr><td>${MOIS_LONG[r.i]}</td><td>${fmt(r.ca)}</td><td>${fmt(r.ch)}</td><td style="color:${r.ca-r.ch>=0?'var(--green)':'var(--red)'}">${fmtS(r.ca-r.ch)}</td></tr>`).join('')}
+    <tr class="tot"><td>Total</td><td>${fmt(ca)}</td><td>${fmt(ch)}</td><td style="color:${res>=0?'var(--green)':'var(--red)'}">${fmtS(res)}</td></tr></table>
+    <div class="cib-note">Marge : <b>${marge} %</b> · charges moyennes : ${fmt(chMoy)} F par mois. Charges = sorties hors prêts et dons.</div></div>
+  <div class="cib-card"><div class="cib-lbl">Où est passé l'argent encaissé · ${fmt(ca+rembY)} F</div>
+    <div class="sf-flow"><div style="width:${w(ch)}%;background:var(--navy)"></div><div style="width:${w(pretsNets)}%;background:var(--red)"></div><div style="width:${w(donsY)}%;background:var(--yellow)"></div></div>
+    <div class="sf-leg"><span><i style="background:var(--navy)"></i>Charges ${fmt(ch)}</span><span><i style="background:var(--red)"></i>Prêts nets ${fmt(pretsNets)}</span><span><i style="background:var(--yellow)"></i>Dons ${fmt(donsY)}</span><span>Reste ${fmtS(ca+rembY-ch-pretsY-donsY+0)}</span></div>
+    <div class="cib-note" style="color:var(--text3)">Encaissements de l'année, remboursements reçus compris.</div></div>
+  <div class="cib-grid">
+    <div class="cib-card"><div class="cib-lbl">Trésorerie</div><div class="cib-big" style="color:${solde<chMoy?'var(--red)':'inherit'}">${solde<0?'−':''}${fmt(Math.abs(solde))} F</div><div class="sf-sub">${jours==null?'—':jours+' jour'+(jours>1?'s':'')+' de charges couvert'+(jours>1?'s':'')}</div><span class="cib-pill ${jours!=null&&jours>=90?'cp-ok':'cp-ko'}" style="display:inline-block;margin-top:6px">Objectif : 3 mois</span></div>
+    <div class="cib-card"><div class="cib-lbl">À encaisser</div><div class="cib-big">${fmt(creances)} F</div><div class="sf-sub">factures en cours</div>${c.ca[y]?`<span class="cib-pill cp-warn" style="display:inline-block;margin-top:6px">CA ${y} possible : ${fmt(caPeriode(ys)+(y===cy?creances:0))}</span>`:''}</div>
+  </div>
+  <div class="cib-grid" style="margin-top:8px">
+    <div class="cib-card"><div class="cib-lbl">Prêté non remboursé</div><div class="cib-big" style="color:${duTot>0?'var(--red)':'inherit'}">${fmt(duTot)} F</div><div class="sf-sub">${duPerso?'dont avance perso '+fmt(duPerso)+' F':'tous prêts confondus'}</div></div>
+    <div class="cib-card"><div class="cib-lbl">Rémunération du gérant</div><div class="cib-big">${fmt(salMontant)} F</div><div class="sf-sub">prévue par mois · versé ce mois : ${fmt(salVerse)} F</div></div>
+  </div>
+  <div class="cib-note" style="color:var(--text3);margin:10px 2px 0">Tout est calculé à partir d'ArchiCaisse : opérations, factures et prêts.</div>`;
+}
+function fmtS(v){return (v<0?'−':v>0?'+':'')+fmt(Math.abs(v));}
+
 // ── ONGLETS
 let objTab='cibles';
-try{const t=localStorage.getItem('archiobjectifs-tab');if(t==='plan'||t==='cibles')objTab=t;}catch(e){}
+try{const t=localStorage.getItem('archiobjectifs-tab');if(['plan','cibles','sante'].includes(t))objTab=t;}catch(e){}
 if(location.hash==='#planning')objTab='plan';if(location.hash==='#cibles')objTab='cibles';
 window.switchObjTab=function(t){
   objTab=t;try{localStorage.setItem('archiobjectifs-tab',t);}catch(e){}
   document.getElementById('tab-cibles').classList.toggle('active',t==='cibles');
   document.getElementById('tab-plan').classList.toggle('active',t==='plan');
+  document.getElementById('tab-sante').classList.toggle('active',t==='sante');
+  document.getElementById('view-sante').style.display=t==='sante'?'block':'none';
   document.getElementById('view-cibles').style.display=t==='cibles'?'block':'none';
   document.getElementById('view-plan').style.display=t==='plan'?'block':'none';
   window.scrollTo(0,0);
