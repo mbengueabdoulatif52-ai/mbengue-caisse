@@ -292,11 +292,14 @@ a{text-decoration:none}
 .cib-note{font-size:10px;color:var(--text2);margin-top:6px;line-height:1.5}
 .cib-pill{font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;white-space:nowrap}
 .cp-ok{background:#e8f8ee;color:#1a8c4e}.cp-warn{background:#fff4ea;color:#b85a0c}.cp-ko{background:#fdecea;color:#c0392b}.cp-info{background:var(--surf2);color:var(--text3)}
-.cib-bars{display:flex;align-items:flex-end;gap:3px;height:44px;margin-top:10px;position:relative}
-.cib-bars div{flex:1;border-radius:2px 2px 0 0;background:var(--orange);min-height:2px}
-.cib-bars div.fut{background:var(--border)}
+.cib-bars{display:flex;gap:3px;height:50px;margin-top:22px;position:relative}
+.cib-bars .cb{flex:1;position:relative;height:100%}
+.cib-bars .cb i{position:absolute;left:0;right:0;bottom:0;border-radius:2px 2px 0 0;background:var(--orange);min-height:2px}
+.cib-bars .cb.fut i{background:var(--border)}
+.cib-bars .cb span{position:absolute;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;color:var(--text2);white-space:nowrap;font-variant-numeric:tabular-nums}
 .cib-bars .tgt{position:absolute;left:0;right:0;border-top:1px dashed var(--navy);opacity:.5}
-.cib-months{display:flex;justify-content:space-between;font-size:8px;color:var(--text3);margin-top:3px}
+.cib-months{display:flex;gap:3px;font-size:8px;color:var(--text3);margin-top:3px}
+.cib-months span{flex:1;text-align:center}
 .cib-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .cib-grid .cib-card{margin-bottom:0}
 .cib-f{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
@@ -718,7 +721,7 @@ function renderCibles(){
   }
   const mois=Array.from({length:12},(_,i)=>caPeriode(y+'-'+String(i+1).padStart(2,'0')));
   const mmax=Math.max(target/nbMois,...mois,1);
-  const bars=mois.map((v,i)=>{const fut=i<m0||y>cy||(y===cy&&i>now.getMonth());return`<div class="${fut&&!v?'fut':''}" style="height:${Math.max(4,Math.round(v/mmax*100))}%" title="${fmt(v)} F"></div>`;}).join('');
+  const bars=mois.map((v,i)=>{const fut=i<m0||y>cy||(y===cy&&i>now.getMonth());const hp=Math.max(4,Math.round(v/mmax*100));return`<div class="cb${fut&&!v?' fut':''}" title="${fmt(v)} F"><i style="height:${hp}%"></i>${v?`<span style="bottom:calc(${hp}% + 2px)">${fmtK(v)}</span>`:''}</div>`;}).join('');
   const tgtLine=target?`<div class="tgt" style="bottom:${Math.round(target/nbMois/mmax*100)}%"></div>`:'';
   let h=`<div class="cib-head"><span class="cib-title" id="cibles">Cibles de l'entreprise</span><button class="cib-edit" onclick="openCiblesEdit()">Modifier les cibles</button></div>
   <div class="cib-years">${years.map(v=>`<button class="${v===y?'on':''}" onclick="setCibYear(${v})">${v}</button>`).join('')}</div>
@@ -810,6 +813,7 @@ function fmtAmt(el){const v=el.value.replace(/[^\d]/g,'');el.value=v?Number(v).t
 window.fmtAmt=fmtAmt;
 function currentSolde(){return ops.reduce((s,o)=>s+(o.type==='entree'?1:-1)*(o.montant||0),0);}
 const fmt=n=>Math.round(n||0).toLocaleString('fr-FR');
+function fmtK(v){if(v>=1e6)return (Math.round(v/1e5)/10).toString().replace('.',',')+' M';if(v>=1000)return Math.round(v/1000)+' k';return String(Math.round(v));}
 
 // ── ONGLETS
 let objTab='cibles';
